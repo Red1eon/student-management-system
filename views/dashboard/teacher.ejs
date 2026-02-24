@@ -1,0 +1,87 @@
+<div class="space-y-6 animate-fade-in">
+    <!-- Welcome Header -->
+    <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+        <h1 class="text-2xl font-bold">Welcome, <%= teacher.first_name %> <%= teacher.last_name %></h1>
+        <p class="text-blue-100"><%= teacher.qualification %> | <%= teacher.specialization %></p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+            <p class="text-gray-500 text-sm">My Classes</p>
+            <h3 class="text-3xl font-bold text-gray-800"><%= subjects.length %></h3>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+            <p class="text-gray-500 text-sm">Total Students</p>
+            <h3 class="text-3xl font-bold text-gray-800"><%= totalStudents %></h3>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+            <p class="text-gray-500 text-sm">Today's Classes</p>
+            <h3 class="text-3xl font-bold text-gray-800"><%= todayClasses.length %></h3>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-yellow-500">
+            <p class="text-gray-500 text-sm">Upcoming Exams</p>
+            <h3 class="text-3xl font-bold text-gray-800"><%= upcomingExams.length %></h3>
+        </div>
+    </div>
+
+    <!-- Today's Schedule -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Today's Schedule - <%= today %></h3>
+        <% if (todayClasses.length > 0) { %>
+            <div class="space-y-3">
+                <% todayClasses.forEach(cls => { %>
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-800"><%= cls.subject_name %></p>
+                        <p class="text-sm text-gray-500"><%= cls.class_name %> <%= cls.section %></p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-blue-600"><%= cls.start_time %> - <%= cls.end_time %></p>
+                        <p class="text-sm text-gray-500">Room: <%= cls.room_number || 'TBA' %></p>
+                    </div>
+                </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p class="text-gray-500 text-center py-8">No classes scheduled for today</p>
+        <% } %>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="/teacher/mark-attendance" class="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100">
+                <i class="fas fa-clipboard-check text-2xl text-blue-600 mb-2"></i>
+                <p class="text-sm font-medium">Mark Attendance</p>
+            </a>
+            <a href="/teacher/my-classes" class="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100">
+                <i class="fas fa-users text-2xl text-green-600 mb-2"></i>
+                <p class="text-sm font-medium">My Classes</p>
+            </a>
+            <a href="/teacher/my-timetable" class="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100">
+                <i class="fas fa-calendar-alt text-2xl text-purple-600 mb-2"></i>
+                <p class="text-sm font-medium">My Timetable</p>
+            </a>
+            <a href="/exams" class="p-4 bg-yellow-50 rounded-lg text-center hover:bg-yellow-100">
+                <i class="fas fa-file-alt text-2xl text-yellow-600 mb-2"></i>
+                <p class="text-sm font-medium">Exams & Results</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- My Subjects -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">My Teaching Subjects</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <% subjects.forEach(sub => { %>
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h4 class="font-bold text-gray-800"><%= sub.subject_name %></h4>
+                <p class="text-sm text-gray-500"><%= sub.class_name %> <%= sub.section %></p>
+                <p class="text-xs text-gray-400"><%= sub.academic_year %></p>
+            </div>
+            <% }) %>
+        </div>
+    </div>
+</div>

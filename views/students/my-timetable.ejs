@@ -1,0 +1,35 @@
+<h1 class="text-3xl font-bold mb-2"><%= __('my_timetable') %></h1>
+<p class="text-gray-500 mb-6"><%= (typeof className !== 'undefined' && className) || __('class_not_assigned') %></p>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-4"><%= error %></div>
+<% } %>
+
+<div class="space-y-6">
+  <% const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; %>
+  <% days.forEach(day => { %>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="px-6 py-4 bg-gray-50 border-b">
+        <h2 class="font-semibold text-lg"><%= day %></h2>
+      </div>
+      <div class="p-6">
+        <% if (timetable && timetable[day] && timetable[day].length > 0) { %>
+          <div class="space-y-3">
+            <% timetable[day].forEach(item => { %>
+              <div class="border rounded-lg p-4">
+                <div class="font-medium text-gray-900"><%= item.subject_name || __('subject') %></div>
+                <div class="text-sm text-gray-600">
+                  <span><%= item.start_time || '--:--' %> - <%= item.end_time || '--:--' %></span>
+                  <span class="mx-2">|</span>
+                  <span><%= item.teacher_name || __('teacher_na') %></span>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p class="text-gray-500"><%= __('no_classes_scheduled') %></p>
+        <% } %>
+      </div>
+    </div>
+  <% }) %>
+</div>

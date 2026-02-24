@@ -1,0 +1,24 @@
+<div class="space-y-6 animate-fade-in">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Exams</h2>
+        <a href="/exams/create" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+            <i class="fas fa-plus mr-2"></i> Create Exam
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <% if (typeof exams !== 'undefined' && exams.length > 0) { %>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <% exams.forEach(e => { %>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h3 class="font-bold text-lg"><%= e.exam_name %></h3>
+                    <p class="text-sm text-gray-500"><%= e.class_name %> - <%= e.subject_name %></p>
+                    <p class="text-sm text-gray-500">Date: <%= e.exam_date || 'TBD' %></p>
+                </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p class="text-gray-500 text-center py-8">No exams found</p>
+        <% } %>
+    </div>
+</div>

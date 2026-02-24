@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="<%= typeof locale !== 'undefined' ? locale : 'en' %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | School Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade-in">
+        <div class="text-right mb-3 text-sm">
+            <a href="/auth/login?lang=en" class="text-gray-600 hover:text-blue-600">EN</a>
+            <span class="text-gray-300 mx-1">|</span>
+            <a href="/auth/login?lang=ja" class="text-gray-600 hover:text-blue-600"><%= __('japanese') %></a>
+        </div>
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-graduation-cap text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">EduPortal</h1>
+            <p class="text-gray-500 mt-2"><%= __('welcome') %></p>
+        </div>
+        
+        <% if (locals.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <%= error %>
+            </div>
+        <% } %>
+        
+        <form action="/auth/login" method="POST" class="space-y-4">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('username') %></label>
+                <div class="relative">
+                    <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                    <input type="text" name="username" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('password') %></label>
+                <div class="relative">
+                    <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                    <input type="password" name="password" required class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all">
+                <%= __('login') %>
+            </button>
+        </form>
+        
+        <div class="mt-6 text-center text-sm text-gray-500">
+            <p>Demo: admin / admin123</p>
+            <p>Demo: teacher / teacher123</p>
+            <p>Demo: student / student123</p>
+            <p>Demo: parent / parent123</p>
+        </div>
+    </div>
+</body>
+</html>

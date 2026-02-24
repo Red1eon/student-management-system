@@ -1,0 +1,48 @@
+<div class="space-y-6 animate-fade-in">
+  <h2 class="text-2xl font-bold text-gray-800"><%= __('parent_dashboard') %></h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white p-5 rounded-xl shadow">
+      <p class="text-sm text-gray-500"><%= __('children') %></p>
+      <p class="text-3xl font-bold text-gray-800"><%= stats.total_children || 0 %></p>
+    </div>
+    <div class="bg-white p-5 rounded-xl shadow">
+      <p class="text-sm text-gray-500"><%= __('pending_fees') %></p>
+      <p class="text-3xl font-bold text-red-600"><%= Number(stats.pending_fees || 0).toFixed(2) %></p>
+    </div>
+    <div class="bg-white p-5 rounded-xl shadow">
+      <p class="text-sm text-gray-500"><%= __('total_results_recorded') %></p>
+      <p class="text-3xl font-bold text-gray-800"><%= stats.total_results || 0 %></p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 py-4 border-b">
+      <h3 class="font-semibold text-gray-800"><%= __('my_children') %></h3>
+    </div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('name') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('admission') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('class') %></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (!children || children.length === 0) { %>
+          <tr>
+            <td class="px-6 py-4 text-gray-500 text-center" colspan="3"><%= __('no_linked_children') %></td>
+          </tr>
+        <% } else { %>
+          <% children.forEach((child) => { %>
+            <tr>
+              <td class="px-6 py-4"><%= child.first_name %> <%= child.last_name %></td>
+              <td class="px-6 py-4"><%= child.admission_number %></td>
+              <td class="px-6 py-4"><%= child.class_name ? `${child.class_name} ${child.section || ''}` : __('na') %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

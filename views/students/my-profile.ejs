@@ -1,0 +1,42 @@
+<h1 class="text-3xl font-bold mb-6"><%= __('my_profile') %></h1>
+
+<div class="bg-white rounded-xl shadow-lg p-6">
+  <% if (student) { %>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div>
+        <p class="text-sm text-gray-500"><%= __('first_name') %></p>
+        <p class="font-medium"><%= student.first_name || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('last_name') %></p>
+        <p class="font-medium"><%= student.last_name || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('email') %></p>
+        <p class="font-medium"><%= student.email || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('phone') %></p>
+        <p class="font-medium"><%= student.phone || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('class') %></p>
+        <p class="font-medium"><%= student.class_name || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('roll_number') %></p>
+        <p class="font-medium"><%= student.roll_number || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('admission_number') %></p>
+        <p class="font-medium"><%= student.admission_number || '-' %></p>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500"><%= __('admission_date') %></p>
+        <p class="font-medium"><%= student.admission_date || '-' %></p>
+      </div>
+    </div>
+  <% } else { %>
+    <p class="text-gray-500"><%= __('profile_data_not_found') %></p>
+  <% } %>
+</div>

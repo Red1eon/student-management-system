@@ -1,0 +1,65 @@
+<div class="space-y-6 animate-fade-in">
+  <h2 class="text-2xl font-bold text-gray-800">My Books</h2>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="px-6 py-4 border-b">
+      <h3 class="font-semibold text-gray-800">Currently Issued</h3>
+    </div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Author</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue Date</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (issues.length === 0) { %>
+          <tr>
+            <td class="px-6 py-4 text-gray-500 text-center" colspan="4">No issued books</td>
+          </tr>
+        <% } %>
+        <% issues.forEach((issue) => { %>
+          <tr>
+            <td class="px-6 py-4"><%= issue.title %></td>
+            <td class="px-6 py-4"><%= issue.author %></td>
+            <td class="px-6 py-4"><%= issue.issue_date %></td>
+            <td class="px-6 py-4"><%= issue.due_date %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="px-6 py-4 border-b">
+      <h3 class="font-semibold text-gray-800">Request History</h3>
+    </div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Author</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Requested On</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (requests.length === 0) { %>
+          <tr>
+            <td class="px-6 py-4 text-gray-500 text-center" colspan="4">No requests yet</td>
+          </tr>
+        <% } %>
+        <% requests.forEach((request) => { %>
+          <tr>
+            <td class="px-6 py-4"><%= request.title %></td>
+            <td class="px-6 py-4"><%= request.author %></td>
+            <td class="px-6 py-4"><%= request.request_date %></td>
+            <td class="px-6 py-4 capitalize"><%= request.status %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

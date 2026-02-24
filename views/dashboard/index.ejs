@@ -1,0 +1,78 @@
+<div class="space-y-6 animate-fade-in">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-blue-500">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium"><%= __('total_students') %></p>
+                    <h3 class="text-3xl font-bold text-gray-800 mt-2"><%= stats.total_students || 0 %></h3>
+                </div>
+                <div class="p-3 bg-blue-100 rounded-lg">
+                    <i class="fas fa-user-graduate text-2xl text-blue-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-purple-500">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium"><%= __('total_teachers') %></p>
+                    <h3 class="text-3xl font-bold text-gray-800 mt-2"><%= stats.total_teachers || 0 %></h3>
+                </div>
+                <div class="p-3 bg-purple-100 rounded-lg">
+                    <i class="fas fa-chalkboard-teacher text-2xl text-purple-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-green-500">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium"><%= __('todays_attendance') %></p>
+                    <h3 class="text-3xl font-bold text-gray-800 mt-2"><%= stats.today_attendance || 0 %></h3>
+                </div>
+                <div class="p-3 bg-green-100 rounded-lg">
+                    <i class="fas fa-clipboard-check text-2xl text-green-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-l-4 border-yellow-500">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-gray-500 text-sm font-medium"><%= __('total_classes') %></p>
+                    <h3 class="text-3xl font-bold text-gray-800 mt-2"><%= stats.total_classes || 0 %></h3>
+                </div>
+                <div class="p-3 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-school text-2xl text-yellow-600"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-bold text-gray-800"><%= __('quick_actions') %></h3>
+            <a href="/dashboard/audit" class="text-sm text-blue-600 hover:underline"><%= __('view_audit_logs') %></a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <a href="/students/add" class="p-4 border-2 border-dashed border-blue-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center group">
+                <i class="fas fa-user-plus text-2xl text-blue-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <p class="text-sm font-medium text-gray-700"><%= __('add_student') %></p>
+            </a>
+            <a href="/attendance/mark" class="p-4 border-2 border-dashed border-green-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center group">
+                <i class="fas fa-clipboard-check text-2xl text-green-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <p class="text-sm font-medium text-gray-700"><%= __('mark_attendance') %></p>
+            </a>
+            <a href="/exams/create" class="p-4 border-2 border-dashed border-purple-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center group">
+                <i class="fas fa-file-alt text-2xl text-purple-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <p class="text-sm font-medium text-gray-700"><%= __('create_exam') %></p>
+            </a>
+            <a href="/fees/record" class="p-4 border-2 border-dashed border-yellow-300 rounded-lg hover:border-yellow-500 hover:bg-yellow-50 transition-all text-center group">
+                <i class="fas fa-cash-register text-2xl text-yellow-500 mb-2 group-hover:scale-110 transition-transform"></i>
+                <p class="text-sm font-medium text-gray-700"><%= __('record_payment') %></p>
+            </a>
+        </div>
+    </div>
+</div>

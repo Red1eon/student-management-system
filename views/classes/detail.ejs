@@ -1,0 +1,121 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800"><%= classData.class_name %> <%= classData.section || '' %></h2>
+      <p class="text-sm text-gray-500"><%= __('code') %>: <%= classData.class_code %> | <%= __('year') %>: <%= classData.academic_year %></p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/classes/<%= classData.class_id %>/edit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"><%= __('edit') %></a>
+      <form action="/classes/<%= classData.class_id %>?_method=DELETE" method="POST" onsubmit="return confirm('<%= __('confirm_delete_class') %>')">
+        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"><%= __('delete') %></button>
+      </form>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500"><%= __('class_teacher') %></p>
+      <p class="text-lg font-semibold text-gray-800"><%= classData.teacher_name || __('not_assigned') %></p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500"><%= __('capacity') %></p>
+      <p class="text-lg font-semibold text-gray-800"><%= classData.capacity || 0 %></p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500"><%= __('room') %></p>
+      <p class="text-lg font-semibold text-gray-800"><%= classData.room_number || __('na') %></p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-5">
+    <h3 class="font-semibold text-gray-800 mb-4"><%= __('promote_students') %></h3>
+    <form action="/classes/<%= classData.class_id %>/promote" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <select name="target_class_id" required class="px-3 py-2 border rounded-lg">
+        <option value=""><%= __('select_target_class') %></option>
+        <% classes.filter((c) => String(c.class_id) !== String(classData.class_id)).forEach((c) => { %>
+          <option value="<%= c.class_id %>"><%= c.class_name %> <%= c.section || '' %> (<%= c.academic_year %>)</option>
+        <% }) %>
+      </select>
+      <input type="text" name="academic_year" value="<%= new Date().getFullYear() %>" required class="px-3 py-2 border rounded-lg" />
+      <button class="bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700"><%= __('promote_all') %></button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 py-4 border-b">
+      <h3 class="font-semibold text-gray-800"><%= __('add_timetable_entry') %></h3>
+      <form action="/classes/<%= classData.class_id %>/timetable" method="POST" class="grid grid-cols-1 md:grid-cols-7 gap-2 mt-3">
+        <select name="day_of_week" required class="px-2 py-2 border rounded-lg">
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option>
+        </select>
+        <input type="time" name="start_time" required class="px-2 py-2 border rounded-lg" />
+        <input type="time" name="end_time" required class="px-2 py-2 border rounded-lg" />
+        <select name="subject_id" required class="px-2 py-2 border rounded-lg">
+          <option value=""><%= __('subject') %></option>
+          <% subjects.forEach((s) => { %><option value="<%= s.subject_id %>"><%= s.subject_name %></option><% }) %>
+        </select>
+        <select name="teacher_id" required class="px-2 py-2 border rounded-lg">
+          <option value=""><%= __('teacher') %></option>
+          <% teachers.forEach((t) => { %><option value="<%= t.teacher_id %>"><%= t.first_name %> <%= t.last_name %></option><% }) %>
+        </select>
+        <input type="text" name="room_number" placeholder="<%= __('room') %>" class="px-2 py-2 border rounded-lg" />
+        <button class="bg-blue-600 text-white rounded-lg px-3 py-2"><%= __('add') %></button>
+      </form>
+    </div>
+    <div class="px-6 py-4 border-b"><h3 class="font-semibold text-gray-800"><%= __('students') %></h3></div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('name') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('admission') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('roll') %></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (!students || students.length === 0) { %>
+          <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500"><%= __('no_students_in_class') %></td></tr>
+        <% } else { %>
+          <% students.forEach((s) => { %>
+            <tr>
+              <td class="px-6 py-4"><%= s.first_name %> <%= s.last_name %></td>
+              <td class="px-6 py-4"><%= s.admission_number %></td>
+              <td class="px-6 py-4"><%= s.roll_number || '-' %></td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <div class="px-6 py-4 border-b"><h3 class="font-semibold text-gray-800"><%= __('timetable') %></h3></div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('day') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('subject') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('time') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('action') %></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (!timetable || timetable.length === 0) { %>
+          <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500"><%= __('no_timetable_records') %></td></tr>
+        <% } else { %>
+          <% timetable.forEach((t) => { %>
+            <tr>
+              <td class="px-6 py-4"><%= t.day_of_week %></td>
+              <td class="px-6 py-4"><%= t.subject_name || '-' %></td>
+              <td class="px-6 py-4"><%= t.start_time %> - <%= t.end_time %></td>
+              <td class="px-6 py-4">
+                <form action="/classes/<%= classData.class_id %>/timetable/<%= t.timetable_id %>?_method=DELETE" method="POST" onsubmit="return confirm('<%= __('confirm_delete_timetable') %>')">
+                  <button type="submit" class="text-red-600 hover:underline"><%= __('delete') %></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

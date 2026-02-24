@@ -1,0 +1,57 @@
+﻿<div class="space-y-6 animate-fade-in">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800"><%= __('enter_results') %></h2>
+            <p class="text-gray-500"><%= exam ? exam.exam_name : __('exam') %> - <%= exam ? exam.subject_name : '' %></p>
+        </div>
+        <a href="/teacher/dashboard" class="text-blue-600 hover:text-blue-800 font-medium">
+            <i class="fas fa-arrow-left mr-2"></i><%= __('back_to_dashboard') %>
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <form method="POST" action="/teacher/enter-results/<%= exam ? exam.exam_id : '' %>">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('student') %></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('marks') %></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('grade') %></th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('remarks') %></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <% if (students && students.length > 0) { %>
+                        <% students.forEach((student, idx) => { %>
+                            <% const existing = (existingResults || []).find(r => String(r.student_id) === String(student.student_id)); %>
+                            <tr>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                    <%= student.first_name %> <%= student.last_name %>
+                                    <input type="hidden" name="results[<%= idx %>][student_id]" value="<%= student.student_id %>">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <input type="number" min="0" max="100" name="results[<%= idx %>][marks]" value="<%= existing ? existing.marks_obtained : '' %>" class="w-24 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <input type="text" name="results[<%= idx %>][grade]" value="<%= existing ? existing.grade : '' %>" class="w-20 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </td>
+                                <td class="px-6 py-4">
+                                    <input type="text" name="results[<%= idx %>][remarks]" value="<%= existing ? existing.remarks : '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="4" class="px-6 py-10 text-center text-gray-500"><%= __('no_students_for_exam') %></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+            <div class="p-4 bg-gray-50 border-t flex justify-end">
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                    <i class="fas fa-save mr-2"></i><%= __('save_results') %>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,87 @@
+<h1 class="text-3xl font-bold mb-2"><%= __('my_fees') %></h1>
+<p class="text-gray-500 mb-6"><%= student ? `${student.first_name || ''} ${student.last_name || ''}`.trim() : __('student') %></p>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-4"><%= error %></div>
+<% } %>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-white rounded-xl shadow-lg p-5">
+    <p class="text-sm text-gray-500"><%= __('total_fees') %></p>
+    <p class="text-2xl font-bold text-gray-800">$<%= Number(balance?.total || 0).toFixed(2) %></p>
+  </div>
+  <div class="bg-white rounded-xl shadow-lg p-5">
+    <p class="text-sm text-gray-500"><%= __('paid') %></p>
+    <p class="text-2xl font-bold text-green-700">$<%= Number(balance?.paid || 0).toFixed(2) %></p>
+  </div>
+  <div class="bg-white rounded-xl shadow-lg p-5">
+    <p class="text-sm text-gray-500"><%= __('balance') %></p>
+    <p class="text-2xl font-bold <%= Number(balance?.balance || 0) > 0 ? 'text-red-700' : 'text-green-700' %>">
+      $<%= Number(balance?.balance || 0).toFixed(2) %>
+    </p>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+  <div class="px-6 py-4 border-b bg-gray-50">
+    <h2 class="font-semibold text-lg"><%= __('fee_structure') %></h2>
+  </div>
+  <table class="w-full">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left"><%= __('fee') %></th>
+        <th class="px-6 py-3 text-left"><%= __('type') %></th>
+        <th class="px-6 py-3 text-left"><%= __('amount') %></th>
+        <th class="px-6 py-3 text-left"><%= __('due_date') %></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <% if (fees && fees.length > 0) { %>
+        <% fees.forEach(fee => { %>
+          <tr>
+            <td class="px-6 py-4"><%= fee.fee_name || '-' %></td>
+            <td class="px-6 py-4 capitalize"><%= fee.fee_type || '-' %></td>
+            <td class="px-6 py-4">$<%= Number(fee.amount || 0).toFixed(2) %></td>
+            <td class="px-6 py-4"><%= fee.due_date || '-' %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="4" class="px-6 py-4 text-center text-gray-500"><%= __('no_fee_records') %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+  <div class="px-6 py-4 border-b bg-gray-50">
+    <h2 class="font-semibold text-lg"><%= __('payment_history') %></h2>
+  </div>
+  <table class="w-full">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left"><%= __('date') %></th>
+        <th class="px-6 py-3 text-left"><%= __('fee') %></th>
+        <th class="px-6 py-3 text-left"><%= __('amount') %></th>
+        <th class="px-6 py-3 text-left"><%= __('receipt') %></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <% if (payments && payments.length > 0) { %>
+        <% payments.forEach(payment => { %>
+          <tr>
+            <td class="px-6 py-4"><%= payment.payment_date || '-' %></td>
+            <td class="px-6 py-4"><%= payment.fee_name || '-' %></td>
+            <td class="px-6 py-4">$<%= Number(payment.amount_paid || 0).toFixed(2) %></td>
+            <td class="px-6 py-4"><%= payment.receipt_number || '-' %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="4" class="px-6 py-4 text-center text-gray-500"><%= __('no_payments_recorded') %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

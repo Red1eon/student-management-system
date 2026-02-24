@@ -1,0 +1,29 @@
+<h1 class="text-3xl font-bold mb-6"><%= __('welcome') %>, <%= user.first_name %>!</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+    <p class="text-gray-500"><%= __('attendance') %></p>
+    <p class="text-3xl font-bold"><%= stats.attendance_percentage %>%</p>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+    <p class="text-gray-500"><%= __('class') %></p>
+    <p class="text-3xl font-bold"><%= student?.class_name || __('na') %></p>
+  </div>
+  <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500">
+    <p class="text-gray-500"><%= __('roll_number') %></p>
+    <p class="text-3xl font-bold"><%= student?.roll_number || __('na') %></p>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+  <a href="/student/my-attendance" class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+    <i class="fas fa-clipboard-check text-3xl text-blue-600 mb-4"></i>
+    <h3 class="font-bold text-lg"><%= __('view_attendance') %></h3>
+    <p class="text-gray-500"><%= __('check_monthly_attendance') %></p>
+  </a>
+  <a href="/student/my-results" class="bg-white p-6 rounded-xl shadow hover:shadow-lg transition">
+    <i class="fas fa-file-alt text-3xl text-green-600 mb-4"></i>
+    <h3 class="font-bold text-lg"><%= __('view_results') %></h3>
+    <p class="text-gray-500"><%= __('check_exam_results') %></p>
+  </a>
+</div>

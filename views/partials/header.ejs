@@ -1,0 +1,28 @@
+﻿<header class="bg-white shadow-sm border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-800"><%= title %></h1>
+        <p class="text-sm text-gray-500"><%= new Date().toLocaleDateString(locale === 'ja' ? 'ja-JP' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+    </div>
+    
+    <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-2 text-sm">
+            <span class="text-gray-500"><%= __('language') %>:</span>
+            <a href="<%= currentPath %>?lang=en" class="<%= locale === 'en' ? 'font-semibold text-blue-600' : 'text-gray-600 hover:text-blue-600' %>"><%= __('english') %></a>
+            <span class="text-gray-300">|</span>
+            <a href="<%= currentPath %>?lang=ja" class="<%= locale === 'ja' ? 'font-semibold text-blue-600' : 'text-gray-600 hover:text-blue-600' %>"><%= __('japanese') %></a>
+        </div>
+
+        <button class="relative p-2 text-gray-600 hover:text-blue-600 transition-colors">
+            <i class="fas fa-bell text-xl"></i>
+            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+        </button>
+        
+        <div class="flex items-center space-x-3 pl-4 border-l border-gray-200">
+            <img src="<%= user.profilePicture || `https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=667eea&color=fff` %>" class="w-10 h-10 rounded-full">
+            <div class="hidden md:block">
+                <p class="font-semibold text-gray-800"><%= user.firstName %> <%= user.lastName %></p>
+                <p class="text-xs text-gray-500"><%= user.email %></p>
+            </div>
+        </div>
+    </div>
+</header>

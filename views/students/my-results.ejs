@@ -1,0 +1,39 @@
+<h1 class="text-3xl font-bold mb-6"><%= __('my_results') %></h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-4"><%= error %></div>
+<% } %>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left"><%= __('exam') %></th>
+        <th class="px-6 py-3 text-left"><%= __('subject') %></th>
+        <th class="px-6 py-3 text-left"><%= __('marks') %></th>
+        <th class="px-6 py-3 text-left"><%= __('date') %></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <% if (results && results.length > 0) { %>
+        <% results.forEach(result => { %>
+          <tr>
+            <td class="px-6 py-4"><%= result.exam_name || '-' %></td>
+            <td class="px-6 py-4"><%= result.subject_name || '-' %></td>
+            <td class="px-6 py-4">
+              <%= result.marks_obtained ?? '-' %>
+              <% if (result.total_marks) { %>
+                / <%= result.total_marks %>
+              <% } %>
+            </td>
+            <td class="px-6 py-4"><%= result.exam_date || '-' %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="4" class="px-6 py-4 text-center text-gray-500"><%= __('no_results_found') %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

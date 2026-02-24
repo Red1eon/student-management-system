@@ -1,0 +1,39 @@
+<h1 class="text-3xl font-bold mb-6"><%= __('my_attendance') %></h1>
+
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="bg-red-100 text-red-700 p-4 rounded-lg mb-4"><%= error %></div>
+<% } %>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left"><%= __('date') %></th>
+        <th class="px-6 py-3 text-left"><%= __('status_label') %></th>
+        <th class="px-6 py-3 text-left"><%= __('remarks') %></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y">
+      <% if (attendance.length > 0) { %>
+        <% attendance.forEach(record => { %>
+          <tr>
+            <td class="px-6 py-4"><%= record.date %></td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-full text-sm 
+                <%= record.status === 'present' ? 'bg-green-100 text-green-800' : 
+                   record.status === 'absent' ? 'bg-red-100 text-red-800' : 
+                   'bg-yellow-100 text-yellow-800' %>">
+                <%= __('status.' + record.status) %>
+              </span>
+            </td>
+            <td class="px-6 py-4"><%= record.remarks || '-' %></td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr>
+          <td colspan="3" class="px-6 py-4 text-center text-gray-500"><%= __('no_attendance_records') %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

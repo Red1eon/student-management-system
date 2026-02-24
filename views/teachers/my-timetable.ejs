@@ -1,0 +1,42 @@
+﻿<div class="space-y-6 animate-fade-in">
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800"><%= __('my_timetable') %></h2>
+            <p class="text-gray-500"><%= __('your_weekly_teaching_schedule') %></p>
+        </div>
+        <a href="/teacher/dashboard" class="text-blue-600 hover:text-blue-800 font-medium">
+            <i class="fas fa-arrow-left mr-2"></i><%= __('back_to_dashboard') %>
+        </a>
+    </div>
+
+    <% if (error) { %>
+        <div class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded-lg">
+            <%= error %>
+        </div>
+    <% } %>
+
+    <% const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; %>
+    <% days.forEach(day => { %>
+        <% const dayClasses = timetable[day] || []; %>
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="bg-gray-800 text-white px-5 py-3 font-semibold"><%= day %></div>
+
+            <% if (dayClasses.length > 0) { %>
+                <% dayClasses.forEach(period => { %>
+                    <div class="px-5 py-4 border-b border-gray-100 last:border-b-0">
+                        <div class="text-sm font-semibold text-gray-600">
+                            <%= period.start_time %> - <%= period.end_time %>
+                        </div>
+                        <div class="text-lg font-semibold text-blue-700 mt-1"><%= period.subject_name %></div>
+                        <div class="text-gray-600 text-sm mt-1">
+                            <%= __('class') %>: <%= period.class_name %> <%= period.section || '' %> |
+                            <%= __('room') %>: <%= period.room_number || period.class_room || __('tba') %>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="px-5 py-6 text-center text-gray-400"><%= __('no_classes_scheduled') %></div>
+            <% } %>
+        </div>
+    <% }) %>
+</div>

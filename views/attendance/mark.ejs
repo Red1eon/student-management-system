@@ -1,0 +1,86 @@
+<div class="max-w-4xl mx-auto animate-fade-in">
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Mark Attendance</h2>
+
+        <form action="/attendance/mark" method="GET" class="mb-8 bg-gray-50 p-4 rounded-lg">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                    <select name="class_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
+                        <option value="">Select Class</option>
+                        <% classes.forEach(c => { %>
+                            <option value="<%= c.class_id %>" <%= selectedClass == c.class_id ? 'selected' : '' %>><%= c.class_name %> <%= c.section %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" name="date" required value="<%= selectedDate || new Date().toISOString().split('T')[0] %>" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Load Students</button>
+                </div>
+            </div>
+        </form>
+
+        <% if (students.length > 0) { %>
+        <form action="/attendance/mark" method="POST" class="space-y-4">
+            <input type="hidden" name="class_id" value="<%= selectedClass %>">
+            <input type="hidden" name="date" value="<%= selectedDate %>">
+
+            <div class="space-y-2">
+                <% students.forEach((s, index) => { 
+                    const existing = existingAttendance.find(a => a.student_id === s.student_id);
+                %>
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                            <%= s.first_name[0] %><%= s.last_name[0] %>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800"><%= s.first_name %> <%= s.last_name %></p>
+                            <p class="text-sm text-gray-500">Roll: <%= s.roll_number || 'N/A' %></p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="present" 
+                                   <%= existing?.status === 'present' ? 'checked' : '' %> class="sr-only peer">
+                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-green-500 peer-checked:text-white">Present</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="absent" 
+                                   <%= existing?.status === 'absent' ? 'checked' : '' %> class="sr-only peer">
+                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-red-500 peer-checked:text-white">Absent</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="late" 
+                                   <%= existing?.status === 'late' ? 'checked' : '' %> class="sr-only peer">
+                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-yellow-500 peer-checked:text-white">Late</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="excused" 
+                                   <%= existing?.status === 'excused' ? 'checked' : '' %> class="sr-only peer">
+                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-blue-500 peer-checked:text-white">Excused</span>
+                        </label>
+                    </div>
+                </div>
+                <input type="hidden" name="attendance[<%= s.student_id %>][remarks]" value="">
+                <% }) %>
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
+                    Save Attendance
+                </button>
+            </div>
+        </form>
+        <% } else if (selectedClass) { %>
+        <div class="text-center py-12 text-gray-500">
+            <i class="fas fa-users text-4xl mb-4"></i>
+            <p>No students found in this class</p>
+        </div>
+        <% } %>
+    </div>
+</div>

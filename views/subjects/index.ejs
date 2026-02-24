@@ -1,0 +1,42 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex justify-between items-center">
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('subjects') %></h2>
+    <a href="/subjects/add" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+      <i class="fas fa-plus mr-2"></i><%= __('add_subject') %>
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('subject') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('code') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('department') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('credits') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('actions') %></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (!subjects || subjects.length === 0) { %>
+          <tr><td colspan="5" class="px-6 py-4 text-center text-gray-500"><%= __('no_subjects_found') %></td></tr>
+        <% } else { %>
+          <% subjects.forEach((s) => { %>
+            <tr>
+              <td class="px-6 py-4"><%= s.subject_name %></td>
+              <td class="px-6 py-4"><%= s.subject_code %></td>
+              <td class="px-6 py-4"><%= s.department_name || __('general') %></td>
+              <td class="px-6 py-4"><%= s.credits || 0 %></td>
+              <td class="px-6 py-4">
+                <a href="/subjects/<%= s.subject_id %>/edit" class="text-blue-600 hover:underline mr-3"><%= __('edit') %></a>
+                <form action="/subjects/<%= s.subject_id %>?_method=DELETE" method="POST" class="inline" onsubmit="return confirm('<%= __('confirm_delete_subject') %>')">
+                  <button type="submit" class="text-red-600 hover:underline"><%= __('delete') %></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

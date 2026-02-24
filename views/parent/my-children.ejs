@@ -1,0 +1,18 @@
+<div class="space-y-6 animate-fade-in">
+  <h2 class="text-2xl font-bold text-gray-800"><%= __('my_children') %></h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <% if (!children || children.length === 0) { %>
+      <div class="bg-white rounded-xl shadow p-6 text-gray-500"><%= __('no_children_linked_yet') %></div>
+    <% } else { %>
+      <% children.forEach((child) => { %>
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="text-lg font-semibold text-gray-800"><%= child.first_name %> <%= child.last_name %></h3>
+          <p class="text-sm text-gray-600 mt-2"><%= __('admission') %>: <%= child.admission_number %></p>
+          <p class="text-sm text-gray-600"><%= __('class') %>: <%= child.class_name ? `${child.class_name} ${child.section || ''}` : __('na') %></p>
+          <p class="text-sm text-gray-600"><%= __('email') %>: <%= child.email || __('na') %></p>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</div>

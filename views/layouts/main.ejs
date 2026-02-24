@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="<%= typeof locale !== 'undefined' ? locale : 'en' %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'School Management System' %> | School Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <% if (typeof user !== 'undefined' && user) { %>
+        <div class="flex h-screen">
+            <%- include('../partials/sidebar') %>
+            <main class="flex-1 flex flex-col overflow-hidden">
+                <%- include('../partials/header') %>
+                <div class="flex-1 overflow-y-auto p-8">
+                    <%- body %>
+                </div>
+            </main>
+        </div>
+    <% } else { %>
+        <%- body %>
+    <% } %>
+    
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer') || document.body;
+            const toast = document.createElement('div');
+            const colors = { success: 'bg-green-500', error: 'bg-red-500', info: 'bg-blue-500' };
+            toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+    <script>
+    window.CSRF_TOKEN = '<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>';
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const token = window.CSRF_TOKEN;
+        if (!token) return;
+
+        document.querySelectorAll('form').forEach((form) => {
+            if (form.querySelector('input[name="_csrf"]')) return;
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_csrf';
+            input.value = token;
+            form.appendChild(input);
+        });
+    });
+
+    const nativeFetch = window.fetch;
+    if (nativeFetch) {
+        window.fetch = (input, init = {}) => {
+            const method = String((init.method || 'GET')).toUpperCase();
+            if (!['GET', 'HEAD', 'OPTIONS'].includes(method)) {
+                init.headers = init.headers || {};
+                if (!init.headers['x-csrf-token'] && window.CSRF_TOKEN) {
+                    init.headers['x-csrf-token'] = window.CSRF_TOKEN;
+                }
+            }
+            return nativeFetch(input, init);
+        };
+    }
+    </script>
+</body>
+</html>

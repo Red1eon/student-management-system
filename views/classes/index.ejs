@@ -1,0 +1,40 @@
+<div class="space-y-6 animate-fade-in">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800"><%= __('classes') %></h2>
+        <a href="/classes/add" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <i class="fas fa-plus mr-2"></i> <%= __('add_class') %>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% if (typeof classes !== 'undefined' && classes.length > 0) { %>
+            <% classes.forEach(c => { %>
+            <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800"><%= c.class_name %> <%= c.section %></h3>
+                        <p class="text-sm text-gray-500"><%= c.academic_year %></p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-school text-blue-600"></i>
+                    </div>
+                </div>
+                <div class="space-y-2 text-sm text-gray-600 mb-4">
+                    <p><i class="fas fa-chalkboard-teacher w-5"></i> <%= c.teacher_name || __('no_teacher_assigned') %></p>
+                    <p><i class="fas fa-users w-5"></i> <%= __('capacity') %>: <%= c.capacity %></p>
+                    <p><i class="fas fa-door-open w-5"></i> <%= __('room') %>: <%= c.room_number || __('na') %></p>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="/classes/<%= c.class_id %>" class="text-center bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100"><%= __('view') %></a>
+                    <a href="/classes/<%= c.class_id %>/edit" class="text-center bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200"><%= __('edit') %></a>
+                </div>
+            </div>
+            <% }) %>
+        <% } else { %>
+            <div class="col-span-full text-center py-12 text-gray-500">
+                <i class="fas fa-school text-4xl mb-4"></i>
+                <p><%= __('no_classes_found') %></p>
+            </div>
+        <% } %>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+<div class="space-y-6 animate-fade-in">
+    <h2 class="text-2xl font-bold text-gray-800">Notifications</h2>
+    
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold">Your Notifications</h3>
+            <button onclick="markAllRead()" class="text-blue-600 hover:underline text-sm">
+                Mark all as read
+            </button>
+        </div>
+        
+        <% if (typeof notifications !== 'undefined' && notifications.length > 0) { %>
+            <div class="space-y-3">
+                <% notifications.forEach(n => { %>
+                <div class="flex items-start space-x-3 p-4 <%= n.is_read ? 'bg-gray-50' : 'bg-blue-50' %> rounded-lg">
+                    <div class="w-10 h-10 rounded-full <%= n.is_read ? 'bg-gray-200 text-gray-600' : 'bg-blue-200 text-blue-600' %> flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-semibold text-gray-800"><%= n.title || 'Notification' %></h4>
+                        <p class="text-sm text-gray-600 mt-1"><%= n.message || '' %></p>
+                        <p class="text-xs text-gray-400 mt-2"><%= n.sent_at || 'Recently' %></p>
+                    </div>
+                    <% if (!n.is_read) { %>
+                    <button onclick="markRead('<%= n.user_notification_id %>')" class="text-blue-600 text-sm hover:underline">
+                        Mark read
+                    </button>
+                    <% } %>
+                </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p class="text-gray-500 text-center py-8">No notifications</p>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function markRead(id) {
+    fetch('/notifications/' + id + '/read', { method: 'POST' })
+        .then(() => location.reload());
+}
+
+function markAllRead() {
+    fetch('/notifications/mark-all-read', { method: 'POST' })
+        .then(() => location.reload());
+}
+</script>
