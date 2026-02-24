@@ -1,6 +1,15 @@
 # 🎓 School Management System
 
-A full-featured School Management Portal built using Node.js and Express.js to manage students, teachers, academics, and administration efficiently.
+A full-featured School Management Portal built with **Node.js + Express.js** to manage students, teachers, academics, and administration in one place.
+
+> 🚧 Status: **Under Development**  
+> Core modules are stable. Additional enhancements and optimizations are ongoing.
+
+---
+
+## 📖 Project Objective
+
+The objective of this system is to digitalize school administration processes and reduce manual paperwork by providing a centralized web-based management platform.
 
 ---
 
@@ -15,52 +24,76 @@ A full-featured School Management Portal built using Node.js and Express.js to m
 - EJS
 - Tailwind CSS
 
-### Other Tools
-- Express-session
+### Libraries & Tools
+- express-session
+- connect-sqlite3
+- express-validator
+- method-override
 - i18n
+- multer
+- dotenv
 
 ---
 
-## ✨ Features
+## ✨ Current Features
 
 ### 🔐 Authentication & Authorization
-- Multi-role login system:
-  - Admin
-  - Teacher
-  - Student
-  - Parent
-  - Staff
-- Secure session handling
-- Role-based access control
+- Multi-role login system (Admin, Teacher, Student, Parent, Staff)
+- Role-based route protection
+- Session-based authentication
+- CSRF protection and security middleware
 
 ### 👩‍🎓 Student Management
-- Add / Edit / Delete students
-- Class assignment
-- Profile management
+- Add, edit, delete students
+- Student profile and class mapping
+- Student detail pages
 
 ### 👨‍🏫 Teacher Management
-- Manage teachers
-- Subject & class allocation
+- Add and manage teachers
+- Assign subjects to teachers
+- Teacher dashboard with academic tools
+
+### 🏫 Class & Subject Management
+- Create and update classes
+- Manage subjects
+- Promote students between classes
+- Timetable support
 
 ### 📅 Attendance System
-- Mark daily attendance
-- Track student attendance records
+- Mark attendance by class/date
+- Student-wise attendance reports
+- Teacher attendance workflows
 
-### 📝 Exams & Grades
+### 📝 Exams & Results
 - Create exams
-- Record marks
-- View academic performance
+- Enter marks and results
+- Student and parent result views
 
 ### 💰 Fee Management
-- Track payments
-- Manage financial records
+- Fee structure setup
+- Record payments
+- Receipt generation
+- Student fee history tracking
 
 ### 📚 Library System
-- Book records
-- Issue & return tracking
+- Manage books
+- Issue and return books
+- Book request and approval workflow
+- User borrowing history
 
 ### 🎉 Events Management
-- Create and manage school events
+- Create and update events
+- Event calendar and detailed views
+
+### 🔔 Notifications
+- Create notices
+- User notification inbox
+- Mark-as-read functionality
+
+### 👨‍👩‍👧 Parent Portal
+- View linked children
+- Attendance tracking
+- Fee and result visibility
 
 ### 🌐 Multi-language Support
 - English 🇬🇧
