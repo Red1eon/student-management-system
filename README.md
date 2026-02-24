@@ -6,13 +6,18 @@ A full-featured School Management Portal built using Node.js and Express.js to m
 
 ## 🚀 Tech Stack
 
+### Backend
 - Node.js
 - Express.js
 - SQLite3
-- EJS (Templating)
+
+### Frontend
+- EJS
+- Tailwind CSS
+
+### Other Tools
 - Express-session
-- i18n (Multi-language support)
-- Trailwind / Custom CSS
+- i18n
 
 ---
 
