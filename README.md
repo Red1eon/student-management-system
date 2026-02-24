@@ -12,7 +12,7 @@ A full-featured School Management Portal built using Node.js and Express.js to m
 - EJS (Templating)
 - Express-session
 - i18n (Multi-language support)
-- Bootstrap / Custom CSS
+- Trailwind / Custom CSS
 
 ---
 
