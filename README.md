@@ -1,16 +1,74 @@
-# School Management System
+# 🎓 School Management System
 
-A comprehensive Node.js/Express application for managing educational institutions.
+A full-featured School Management Portal built using Node.js and Express.js to manage students, teachers, academics, and administration efficiently.
 
-## Features
-- Multi-role authentication (Admin, Teacher, Student, Parent, Staff)
-- Student & Teacher management
-- Attendance tracking
-- Exam & Grade management
-- Fee collection & financial tracking
-- Library management
-- Event scheduling
-- Multi-language support (English/Japanese)
+---
+
+## 🚀 Tech Stack
+
+- Node.js
+- Express.js
+- SQLite3
+- EJS (Templating)
+- Express-session
+- i18n (Multi-language support)
+- Bootstrap / Custom CSS
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication & Authorization
+- Multi-role login system:
+  - Admin
+  - Teacher
+  - Student
+  - Parent
+  - Staff
+- Secure session handling
+- Role-based access control
+
+### 👩‍🎓 Student Management
+- Add / Edit / Delete students
+- Class assignment
+- Profile management
+
+### 👨‍🏫 Teacher Management
+- Manage teachers
+- Subject & class allocation
+
+### 📅 Attendance System
+- Mark daily attendance
+- Track student attendance records
+
+### 📝 Exams & Grades
+- Create exams
+- Record marks
+- View academic performance
+
+### 💰 Fee Management
+- Track payments
+- Manage financial records
+
+### 📚 Library System
+- Book records
+- Issue & return tracking
+
+### 🎉 Events Management
+- Create and manage school events
+
+### 🌐 Multi-language Support
+- English 🇬🇧
+- Japanese 🇯🇵
+
+---
+
+## ⚙️ Installation
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/Red1eon/student-management-system.git
 
 ## Installation
 1. Clone repository
