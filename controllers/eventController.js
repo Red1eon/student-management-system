@@ -1,17 +1,30 @@
 const EventModel = require('../models/eventModel');
+const { getJapanSchoolStatus } = require('../utils/japanSchoolCalendar');
+
+function canManageEvents(user) {
+  const role = user?.userType || user?.user_type;
+  return ['admin', 'staff'].includes(role);
+}
 
 const eventController = {
   getAllEvents: async (req, res) => {
     try {
       const events = await EventModel.getAll(req.query);
-      res.render('events/index', { title: 'Events', events, filters: req.query });
+      const schoolStatus = getJapanSchoolStatus();
+      res.render('events/index', {
+        title: 'Events',
+        events,
+        filters: req.query,
+        schoolStatus,
+        canManageEvents: canManageEvents(req.session.user)
+      });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
     }
   },
 
   getCreateEvent: (req, res) => {
-    res.render('events/create', { title: 'Create Event' });
+    res.render('events/create', { title: 'Create Event', formData: {} });
   },
 
   postCreateEvent: async (req, res) => {
@@ -24,14 +37,14 @@ const eventController = {
       await EventModel.create(eventData);
       res.redirect('/events?success=Event created successfully');
     } catch (error) {
-      res.render('events/create', { title: 'Create Event', error: error.message });
+      res.render('events/create', { title: 'Create Event', error: error.message, formData: req.body });
     }
   },
 
   getEventDetail: async (req, res) => {
     try {
       const event = await EventModel.findById(req.params.id);
-      if (!event) return res.status(404).render('404');
+      if (!event) return res.status(404).render('404', { title: 'Page Not Found' });
       
       res.render('events/detail', { title: event.event_name, event });
     } catch (error) {
@@ -41,12 +54,20 @@ const eventController = {
 
   getCalendar: async (req, res) => {
     try {
-      const month = req.query.month || new Date().getMonth() + 1;
-      const year = req.query.year || new Date().getFullYear();
+      const month = String(req.query.month || (new Date().getMonth() + 1)).padStart(2, '0');
+      const year = String(req.query.year || new Date().getFullYear());
       
       const events = await EventModel.getCalendarData(month, year);
+      const schoolStatus = getJapanSchoolStatus();
       
-      res.render('events/calendar', { title: 'Event Calendar', events, month, year });
+      res.render('events/calendar', {
+        title: 'Event Calendar',
+        events,
+        month,
+        year,
+        schoolStatus,
+        canManageEvents: canManageEvents(req.session.user)
+      });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
     }

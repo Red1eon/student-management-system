@@ -1,17 +1,40 @@
 <div class="space-y-6 animate-fade-in">
     <h2 class="text-2xl font-bold text-gray-800">My Profile</h2>
+    <% if (query && query.success) { %>
+      <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"><%= query.success %></div>
+    <% } %>
+    <% if (query && query.error) { %>
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"><%= query.error %></div>
+    <% } %>
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"><%= error %></div>
+    <% } %>
     
     <div class="bg-white rounded-xl shadow-lg p-8">
         <div class="flex items-center space-x-4 mb-6">
-            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl text-white font-bold">
-                <%= typeof user !== 'undefined' ? (user.firstName ? user.firstName[0] : 'U') : 'U' %>
-            </div>
+            <% if (user && user.profilePicture) { %>
+              <img src="<%= user.profilePicture %>" alt="Profile" class="w-20 h-20 rounded-full object-cover border border-gray-200">
+            <% } else { %>
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl text-white font-bold">
+                  <%= typeof user !== 'undefined' ? (user.firstName ? user.firstName[0] : 'U') : 'U' %>
+              </div>
+            <% } %>
             <div>
                 <h3 class="text-xl font-bold"><%= typeof user !== 'undefined' ? (user.firstName + ' ' + user.lastName) : 'User' %></h3>
                 <p class="text-gray-500"><%= typeof user !== 'undefined' ? user.email : '' %></p>
                 <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm capitalize"><%= typeof user !== 'undefined' ? user.userType : '' %></span>
             </div>
         </div>
+
+        <form action="/profile/upload-photo?_csrf=<%= encodeURIComponent(typeof csrfToken !== 'undefined' ? csrfToken : '') %>" method="POST" enctype="multipart/form-data" class="mb-6 p-4 border border-gray-200 rounded-lg">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Update Profile Photo</label>
+          <div class="flex items-center gap-3">
+            <input type="file" name="photo" accept="image/*" required class="text-sm text-gray-600">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Upload</button>
+          </div>
+          <p class="text-xs text-gray-500 mt-2">JPG, PNG, GIF up to 2MB.</p>
+        </form>
         
         <div class="border-t pt-6">
             <h4 class="font-semibold mb-4">Account Settings</h4>

@@ -1,6 +1,7 @@
 ﻿const StudentModel = require('../models/studentModel');
 const UserModel = require('../models/userModel');
-const ClassModel = require('../models/ClassModel');
+const ClassModel = require('../models/classModel');
+const NotificationModel = require('../models/notificationModel');
 const { logAudit } = require('../utils/auditLogger');
 
 const NONE_VALUES = new Set(['none', 'nashi', 'なし', 'ãªã—', 'n/a', 'na', 'null', '-']);
@@ -26,6 +27,16 @@ function pickInputValue(primary, secondary) {
   const first = toNullableText(primary);
   if (first !== null) return first;
   return secondary;
+}
+
+function getActorUserId(req) {
+  const raw = req?.session?.user?.user_id ?? req?.session?.user?.id;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getClassDisplayName(classData) {
+  return `${classData?.class_name || ''} ${classData?.section || ''}`.trim() || 'the selected class';
 }
 
 async function resolveClassId(classInput) {
@@ -195,6 +206,7 @@ const studentController = {
   getEditStudent: async (req, res) => {
     try {
       const student = await StudentModel.findById(req.params.id);
+      if (!student) return res.status(404).render('404', { title: 'Page Not Found' });
       const classes = await ClassModel.getAll();
       res.render('students/edit', { title: 'Edit Student', student, classes });
     } catch (error) {
@@ -204,11 +216,91 @@ const studentController = {
 
   postEditStudent: async (req, res) => {
     try {
-      await StudentModel.update(req.params.id, req.body);
-      await logAudit(req, 'STUDENT_UPDATED', 'student', req.params.id, req.body);
-      res.redirect(`/students/${req.params.id}?success=Updated successfully`);
+      const existingStudent = await StudentModel.findById(req.params.id);
+      if (!existingStudent) {
+        return res.status(404).render('404', { title: 'Page Not Found' });
+      }
+
+      const classIdInput = pickInputValue(req.body.class_id_text, req.body.current_class_id);
+      const classId = await resolveClassId(classIdInput);
+
+      const parentId = toNullableId(req.body.parent_id);
+      if (parentId !== null) {
+        const parentExists = await UserModel.findById(parentId);
+        if (!parentExists) {
+          throw new Error('Selected parent does not exist');
+        }
+      }
+
+      const updateData = {
+        current_class_id: classId,
+        roll_number: toNullableText(req.body.roll_number),
+        parent_id: parentId,
+        emergency_contact_name: toNullableText(req.body.emergency_contact_name),
+        emergency_contact_phone: toNullableText(req.body.emergency_contact_phone),
+        medical_conditions: toNullableText(req.body.medical_conditions)
+      };
+
+      await StudentModel.update(req.params.id, updateData);
+      await logAudit(req, 'STUDENT_UPDATED', 'student', req.params.id, updateData);
+
+      const previousClassId = Number(existingStudent.current_class_id) || null;
+      const currentClassId = Number(classId) || null;
+      if (previousClassId && currentClassId && previousClassId !== currentClassId) {
+        const targetClass = await ClassModel.findById(currentClassId);
+        if (targetClass) {
+          const actorUserId = getActorUserId(req);
+          const studentName = `${existingStudent.first_name || ''} ${existingStudent.last_name || ''}`.trim() || `Student #${existingStudent.student_id}`;
+          const targetClassName = getClassDisplayName(targetClass);
+          const targetTeacherUserId = Number.isInteger(Number(targetClass.class_teacher_id))
+            ? Number(targetClass.class_teacher_id)
+            : null;
+
+          if (existingStudent.user_id) {
+            await NotificationModel.createForUserIds({
+              title: 'Class Transfer Successful',
+              message: `You have been transferred to ${targetClassName}.`,
+              notification_type: 'academic',
+              sent_by: actorUserId,
+              userIds: [existingStudent.user_id]
+            });
+          }
+
+          if (targetTeacherUserId) {
+            await NotificationModel.createForUserIds({
+              title: 'New Student Transfer',
+              message: `${studentName} has been transferred to your class.`,
+              notification_type: 'academic',
+              sent_by: actorUserId,
+              userIds: [targetTeacherUserId]
+            });
+          }
+
+          req.session.messages = req.session.messages || [];
+          req.session.messages.push({
+            type: 'success',
+            text: `Transfer successful: ${studentName} moved to ${targetClassName}.`
+          });
+        }
+      }
+
+      return req.session.save(() => {
+        res.redirect(`/students/${req.params.id}?success=Updated successfully`);
+      });
     } catch (error) {
-      res.status(500).render('error', { message: error.message });
+      try {
+        const student = await StudentModel.findById(req.params.id);
+        const classes = await ClassModel.getAll();
+        if (!student) return res.status(404).render('404', { title: 'Page Not Found' });
+        return res.status(400).render('students/edit', {
+          title: 'Edit Student',
+          student,
+          classes,
+          error: error.message
+        });
+      } catch (renderError) {
+        return res.status(500).render('error', { message: renderError.message });
+      }
     }
   },
 

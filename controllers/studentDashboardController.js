@@ -1,9 +1,10 @@
 ﻿const StudentModel = require('../models/studentModel');
-const AttendanceModel = require('../models/AttendanceModel');
-const ClassModel = require('../models/ClassModel');
-const TimetableModel = require('../models/TimetableModel');
+const AttendanceModel = require('../models/attendanceModel');
+const ClassModel = require('../models/classModel');
+const TimetableModel = require('../models/timetableModel');
 const FeeModel = require('../models/feeModel');
 const FeePaymentModel = require('../models/feePaymentModel');
+const UserNotificationModel = require('../models/userNotificationModel');
 
 const studentDashboardController = {
   
@@ -11,11 +12,15 @@ const studentDashboardController = {
   getDashboard: async (req, res) => {
     try {
       const user = req.session.user;
+      const role = user?.userType || user?.user_type;
+      const sessionUserId = Number(user?.user_id || user?.id || 0);
       let student = null;
       let stats = { attendance_percentage: 0, total_subjects: 0, pending_fees: 0 };
+      let recentNotifications = [];
+      let feeSummary = { total: 0, paid: 0, balance: 0, fee_payment_plan: 'one_time', next_due_date: null };
       
-      if (user.user_type === 'student') {
-        student = await StudentModel.findByUserId(user.user_id);
+      if (role === 'student') {
+        student = await StudentModel.findByUserId(sessionUserId);
         if (student) {
           req.session.user.student_id = student.student_id;
           // Get attendance stats for current month
@@ -28,6 +33,11 @@ const studentDashboardController = {
           const present = attendanceStats.find(s => s.status === 'present')?.count || 0;
           const total = attendanceStats.reduce((sum, s) => sum + s.count, 0);
           stats.attendance_percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+          feeSummary = await StudentModel.getFeeBalance(student.student_id);
+        }
+
+        if (sessionUserId > 0) {
+          recentNotifications = await UserNotificationModel.getByUser(sessionUserId, { limit: 5 });
         }
       }
 
@@ -35,7 +45,9 @@ const studentDashboardController = {
         title: 'Student Dashboard',
         user: req.session.user,
         student: student,
-        stats: stats
+        stats: stats,
+        recentNotifications,
+        feeSummary
       });
     } catch (error) {
       console.error('Student dashboard error:', error);

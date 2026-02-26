@@ -1,12 +1,13 @@
 const NotificationModel = require('../models/notificationModel');
 const UserNotificationModel = require('../models/userNotificationModel');
-const ClassModel = require('../models/ClassModel');
+const ClassModel = require('../models/classModel');
 
 const notificationController = {
   getNotifications: async (req, res) => {
     try {
-      const notifications = await UserNotificationModel.getByUser(req.session.user.id);
-      const unreadCount = await NotificationModel.getUnreadCount(req.session.user.id);
+      const userId = req.session.user?.id || req.session.user?.user_id;
+      const notifications = await UserNotificationModel.getByUser(userId);
+      const unreadCount = await NotificationModel.getUnreadCount(userId);
       
       res.render('notifications/index', {
         title: 'Notifications',
@@ -25,9 +26,10 @@ const notificationController = {
 
   postCreateNotification: async (req, res) => {
     try {
+      const userId = req.session.user?.id || req.session.user?.user_id;
       const notificationData = {
         ...req.body,
-        sent_by: req.session.user.id
+        sent_by: userId
       };
       
       await NotificationModel.create(notificationData);
@@ -49,7 +51,8 @@ const notificationController = {
 
   postMarkAllAsRead: async (req, res) => {
     try {
-      await UserNotificationModel.markAllAsRead(req.session.user.id);
+      const userId = req.session.user?.id || req.session.user?.user_id;
+      await UserNotificationModel.markAllAsRead(userId);
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });
@@ -58,7 +61,8 @@ const notificationController = {
 
   getUnreadCount: async (req, res) => {
     try {
-      const count = await NotificationModel.getUnreadCount(req.session.user.id);
+      const userId = req.session.user?.id || req.session.user?.user_id;
+      const count = await NotificationModel.getUnreadCount(userId);
       res.json({ success: true, count });
     } catch (error) {
       res.status(500).json({ success: false, error: error.message });

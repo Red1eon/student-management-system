@@ -1,8 +1,8 @@
-const TeacherModel = require('../models/TeacherModel');
-const ClassModel = require('../models/ClassModel');
+const TeacherModel = require('../models/teacherModel');
+const ClassModel = require('../models/classModel');
 const StudentModel = require('../models/studentModel');
-const AttendanceModel = require('../models/AttendanceModel');
-const TimetableModel = require('../models/TimetableModel');
+const AttendanceModel = require('../models/attendanceModel');
+const TimetableModel = require('../models/timetableModel');
 
 const teacherDashboardController = {
   
@@ -91,66 +91,15 @@ const teacherDashboardController = {
   // ==================== ATTENDANCE ====================
   getMarkAttendance: async (req, res) => {
     try {
-      // ? FIX: Use teacher_id not teacherId
-      let teacherId = req.session.user?.teacher_id;
-      
-      if (!teacherId) {
-        const teacher = await TeacherModel.findByUserId(req.session.user.user_id);
-        if (teacher) {
-          teacherId = teacher.teacher_id;
-          req.session.user.teacher_id = teacherId;
-        } else {
-          return res.status(403).render('error', { message: 'Teacher profile not found' });
-        }
+      const params = new URLSearchParams(req.query);
+      if (!params.get('mode')) params.set('mode', 'day');
+      if (params.get('mode') === 'day' && !params.get('date')) {
+        params.set('date', new Date().toISOString().slice(0, 10));
       }
-      
-      const subjects = await TeacherModel.getSubjects(teacherId);
-      
-      const uniqueClasses = [];
-      const classMap = new Map();
-      
-      subjects.forEach(sub => {
-        if (!classMap.has(sub.class_id)) {
-          classMap.set(sub.class_id, {
-            class_id: sub.class_id,
-            class_name: sub.class_name,
-            section: sub.section,
-            subjects: []
-          });
-        }
-        classMap.get(sub.class_id).subjects.push({
-          subject_id: sub.subject_id,
-          subject_name: sub.subject_name
-        });
-      });
-      
-      classMap.forEach(cls => uniqueClasses.push(cls));
-
-      let students = [];
-      let selectedClass = null;
-      let selectedDate = req.query.date || new Date().toISOString().split('T')[0];
-      let existingAttendance = [];
-
-      if (req.query.class_id) {
-        selectedClass = uniqueClasses.find(c => c.class_id == req.query.class_id);
-        
-        if (selectedClass) {
-          // ? FIX: Use getByClassId instead of getAll
-          students = await StudentModel.getByClassId(req.query.class_id);
-          existingAttendance = await AttendanceModel.getByClass(req.query.class_id, selectedDate);
-        }
+      if (params.get('mode') === 'month' && !params.get('month')) {
+        params.set('month', new Date().toISOString().slice(0, 7));
       }
-
-      // ? FIX: Use 'teacher/' not 'teachers/'
-      res.render('teachers/mark-attendance', {
-        title: 'Mark Attendance',
-        classes: uniqueClasses,
-        students,
-        selectedClass,
-        selectedDate,
-        existingAttendance,
-        user: req.session.user
-      });
+      res.redirect(`/attendance/mark?${params.toString()}`);
     } catch (error) {
       console.error('Mark attendance error:', error);
       res.status(500).render('error', { message: 'Error loading attendance page', error: error.message });
@@ -171,8 +120,12 @@ const teacherDashboardController = {
         return res.status(403).json({ success: false, error: 'You do not teach this class' });
       }
 
-      if (!class_id || !date || !attendance || Object.keys(attendance).length === 0) {
+      if (!class_id || !date) {
         return res.status(400).json({ success: false, error: 'Missing required data' });
+      }
+
+      if (!attendance || Object.keys(attendance).length === 0) {
+        return res.status(400).json({ success: false, error: 'No attendance entries submitted' });
       }
 
       const records = Object.entries(attendance).map(([student_id, data]) => ({

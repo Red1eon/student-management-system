@@ -1,8 +1,10 @@
-const ClassModel = require('../models/ClassModel');
-const TeacherModel = require('../models/TeacherModel');
+const ClassModel = require('../models/classModel');
+const TeacherModel = require('../models/teacherModel');
 const StudentModel = require('../models/studentModel');
-const TimetableModel = require('../models/TimetableModel');
+const TimetableModel = require('../models/timetableModel');
 const SubjectModel = require('../models/subjectModel');
+const CourseModel = require('../models/courseModel');
+const NotificationModel = require('../models/notificationModel');
 const { logAudit } = require('../utils/auditLogger');
 
 const NONE_VALUES = new Set(['none', 'nashi', 'なし', 'n/a', 'na', 'null', '-']);
@@ -12,6 +14,36 @@ function toNullableText(value) {
   const text = String(value).trim();
   if (!text) return null;
   return NONE_VALUES.has(text.toLowerCase()) ? null : text;
+}
+
+const COURSE_TYPES = new Set(['certificate', 'diploma', 'degree', 'short_course', 'other']);
+const FEE_PAYMENT_PLANS = new Set(['one_time', 'monthly', 'quarterly', 'yearly', 'installment', 'flexible']);
+
+function pickAllowed(value, allowedValues, fallback) {
+  const input = String(value || '').trim();
+  return allowedValues.has(input) ? input : fallback;
+}
+
+function getActorUserId(req) {
+  const raw = req?.session?.user?.user_id ?? req?.session?.user?.id;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function getClassDisplayName(classData) {
+  return `${classData?.class_name || ''} ${classData?.section || ''}`.trim() || 'the selected class';
+}
+
+async function resolveSelectedCourse(courseIdInput) {
+  const courseId = Number.parseInt(courseIdInput, 10);
+  if (!Number.isInteger(courseId) || courseId <= 0) {
+    return { courseId: null, course: null };
+  }
+  const course = await CourseModel.findById(courseId);
+  if (!course) {
+    return { courseId: null, course: null };
+  }
+  return { courseId, course };
 }
 
 async function createSubjectIfProvided(subjectNameInput, subjectCodeInput, className) {
@@ -57,7 +89,7 @@ const classController = {
   getClassDetail: async (req, res) => {
     try {
       const classData = await ClassModel.findById(req.params.id);
-      if (!classData) return res.status(404).render('404');
+      if (!classData) return res.status(404).render('404', { title: 'Page Not Found' });
       
       const students = await StudentModel.getAll({ class_id: req.params.id });
       const timetable = await TimetableModel.getByClass(req.params.id, new Date().getFullYear());
@@ -81,14 +113,24 @@ const classController = {
 
   getAddClass: async (req, res) => {
     const teachers = await TeacherModel.getAll();
-    res.render('classes/add', { title: 'Add Class', teachers });
+    const courses = await CourseModel.getActive();
+    res.render('classes/add', { title: 'Add Class', teachers, courses });
   },
 
   postAddClass: async (req, res) => {
     try {
+      const { courseId, course } = await resolveSelectedCourse(req.body.course_id);
+      const courseFee = Number.parseFloat(req.body.course_fee);
+      const fallbackCourseFee = Number.parseFloat(course?.fee_amount);
       const payload = {
         ...req.body,
-        class_teacher_id: req.body.class_teacher_id ? parseInt(req.body.class_teacher_id, 10) : null
+        class_teacher_id: req.body.class_teacher_id ? parseInt(req.body.class_teacher_id, 10) : null,
+        course_id: courseId,
+        course_type: pickAllowed(req.body.course_type || course?.course_type, COURSE_TYPES, 'other'),
+        course_fee: Number.isFinite(courseFee) && courseFee >= 0
+          ? courseFee
+          : (Number.isFinite(fallbackCourseFee) && fallbackCourseFee >= 0 ? fallbackCourseFee : 0),
+        fee_payment_plan: pickAllowed(req.body.fee_payment_plan || course?.fee_payment_plan, FEE_PAYMENT_PLANS, 'one_time')
       };
       await ClassModel.create(payload);
       await createSubjectIfProvided(req.body.subject_name, req.body.subject_code, req.body.class_name);
@@ -96,7 +138,8 @@ const classController = {
       res.redirect('/classes?success=Class created successfully');
     } catch (error) {
       const teachers = await TeacherModel.getAll();
-      res.render('classes/add', { title: 'Add Class', teachers, error: error.message, formData: req.body });
+      const courses = await CourseModel.getActive();
+      res.render('classes/add', { title: 'Add Class', teachers, courses, error: error.message, formData: req.body });
     }
   },
 
@@ -106,7 +149,8 @@ const classController = {
       if (!classData) return res.status(404).render('404', { title: 'Page Not Found' });
 
       const teachers = await TeacherModel.getAll();
-      res.render('classes/edit', { title: 'Edit Class', classData, teachers });
+      const courses = await CourseModel.getAll();
+      res.render('classes/edit', { title: 'Edit Class', classData, teachers, courses });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
     }
@@ -114,14 +158,23 @@ const classController = {
 
   postEditClass: async (req, res) => {
     try {
+      const { courseId, course } = await resolveSelectedCourse(req.body.course_id);
+      const courseFee = Number.parseFloat(req.body.course_fee);
+      const fallbackCourseFee = Number.parseFloat(course?.fee_amount);
       const updateData = {
         class_name: req.body.class_name,
         class_code: req.body.class_code,
         section: req.body.section || null,
         academic_year: req.body.academic_year,
         class_teacher_id: req.body.class_teacher_id ? parseInt(req.body.class_teacher_id, 10) : null,
+        course_id: courseId,
         capacity: req.body.capacity || 30,
-        room_number: req.body.room_number || null
+        room_number: req.body.room_number || null,
+        course_type: pickAllowed(req.body.course_type || course?.course_type, COURSE_TYPES, 'other'),
+        course_fee: Number.isFinite(courseFee) && courseFee >= 0
+          ? courseFee
+          : (Number.isFinite(fallbackCourseFee) && fallbackCourseFee >= 0 ? fallbackCourseFee : 0),
+        fee_payment_plan: pickAllowed(req.body.fee_payment_plan || course?.fee_payment_plan, FEE_PAYMENT_PLANS, 'one_time')
       };
       await ClassModel.update(req.params.id, updateData);
       await logAudit(req, 'CLASS_UPDATED', 'class', req.params.id, updateData);
@@ -129,7 +182,8 @@ const classController = {
     } catch (error) {
       const classData = await ClassModel.findById(req.params.id);
       const teachers = await TeacherModel.getAll();
-      res.render('classes/edit', { title: 'Edit Class', classData, teachers, error: error.message });
+      const courses = await CourseModel.getAll();
+      res.render('classes/edit', { title: 'Edit Class', classData, teachers, courses, error: error.message });
     }
   },
 
@@ -151,13 +205,57 @@ const classController = {
         return res.redirect(`/classes/${req.params.id}?error=Target class not found`);
       }
 
+      const sourceClass = await ClassModel.findById(fromClassId);
+      const movingStudents = await StudentModel.getAll({ class_id: fromClassId });
       const result = await ClassModel.promoteStudents(fromClassId, toClassId, academicYear);
+
+      if (result.moved > 0 && movingStudents.length > 0) {
+        const actorUserId = getActorUserId(req);
+        const targetClassName = getClassDisplayName(targetClass);
+        const sourceClassName = getClassDisplayName(sourceClass);
+        const targetTeacherUserId = Number.isInteger(Number(targetClass.class_teacher_id))
+          ? Number(targetClass.class_teacher_id)
+          : null;
+
+        for (const student of movingStudents) {
+          const studentName = `${student.first_name || ''} ${student.last_name || ''}`.trim() || `Student #${student.student_id}`;
+
+          if (student.user_id) {
+            await NotificationModel.createForUserIds({
+              title: 'Class Transfer Successful',
+              message: `You have been transferred to ${targetClassName}.`,
+              notification_type: 'academic',
+              sent_by: actorUserId,
+              userIds: [student.user_id]
+            });
+          }
+
+          if (targetTeacherUserId) {
+            await NotificationModel.createForUserIds({
+              title: 'New Student Transfer',
+              message: `${studentName} has been transferred to your class from ${sourceClassName}.`,
+              notification_type: 'academic',
+              sent_by: actorUserId,
+              userIds: [targetTeacherUserId]
+            });
+          }
+        }
+      }
+
       await logAudit(req, 'CLASS_PROMOTION', 'class', fromClassId, {
         target_class_id: toClassId,
         academic_year: academicYear,
         moved: result.moved
       });
-      res.redirect(`/classes/${req.params.id}?success=Promoted ${result.moved} student(s)`);
+
+      req.session.messages = req.session.messages || [];
+      req.session.messages.push({
+        type: 'success',
+        text: `Transfer successful: ${result.moved} student(s) moved to ${getClassDisplayName(targetClass)}.`
+      });
+      return req.session.save(() => {
+        res.redirect(`/classes/${req.params.id}?success=Promoted ${result.moved} student(s)`);
+      });
     } catch (error) {
       res.redirect(`/classes/${req.params.id}?error=${encodeURIComponent(error.message)}`);
     }
@@ -230,3 +328,4 @@ const classController = {
 };
 
 module.exports = classController;
+

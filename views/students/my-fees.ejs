@@ -7,7 +7,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
   <div class="bg-white rounded-xl shadow-lg p-5">
-    <p class="text-sm text-gray-500"><%= __('total_fees') %></p>
+    <p class="text-sm text-gray-500">Total Course Fee</p>
     <p class="text-2xl font-bold text-gray-800">$<%= Number(balance?.total || 0).toFixed(2) %></p>
   </div>
   <div class="bg-white rounded-xl shadow-lg p-5">
@@ -15,11 +15,16 @@
     <p class="text-2xl font-bold text-green-700">$<%= Number(balance?.paid || 0).toFixed(2) %></p>
   </div>
   <div class="bg-white rounded-xl shadow-lg p-5">
-    <p class="text-sm text-gray-500"><%= __('balance') %></p>
+    <p class="text-sm text-gray-500">Left to Pay</p>
     <p class="text-2xl font-bold <%= Number(balance?.balance || 0) > 0 ? 'text-red-700' : 'text-green-700' %>">
       $<%= Number(balance?.balance || 0).toFixed(2) %>
     </p>
   </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg p-5 mb-6">
+  <p class="text-sm text-gray-500">Payment Deadline</p>
+  <p class="text-lg font-semibold text-gray-800"><%= balance?.next_due_date || 'Not set' %></p>
 </div>
 
 <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
@@ -30,8 +35,8 @@
     <thead class="bg-gray-50">
       <tr>
         <th class="px-6 py-3 text-left"><%= __('fee') %></th>
-        <th class="px-6 py-3 text-left"><%= __('type') %></th>
         <th class="px-6 py-3 text-left"><%= __('amount') %></th>
+        <th class="px-6 py-3 text-left">Payment Plan</th>
         <th class="px-6 py-3 text-left"><%= __('due_date') %></th>
       </tr>
     </thead>
@@ -40,8 +45,8 @@
         <% fees.forEach(fee => { %>
           <tr>
             <td class="px-6 py-4"><%= fee.fee_name || '-' %></td>
-            <td class="px-6 py-4 capitalize"><%= fee.fee_type || '-' %></td>
             <td class="px-6 py-4">$<%= Number(fee.amount || 0).toFixed(2) %></td>
+            <td class="px-6 py-4"><%= String(fee.payment_plan || balance?.fee_payment_plan || '-').replace('_', ' ') %></td>
             <td class="px-6 py-4"><%= fee.due_date || '-' %></td>
           </tr>
         <% }) %>

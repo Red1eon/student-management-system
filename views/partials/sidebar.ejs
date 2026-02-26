@@ -1,13 +1,18 @@
-<aside class="w-64 bg-white shadow-xl flex flex-col z-20">
+<aside id="appSidebar" class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl flex flex-col z-40 transform -translate-x-full transition-transform duration-200 md:static md:translate-x-0 md:z-20">
     <div class="p-6 border-b border-gray-200">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <i class="fas fa-graduation-cap text-white"></i>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg text-gray-800">EduPortal</h2>
+                    <p class="text-xs text-gray-500 capitalize"><%= user.userType %></p>
+                </div>
             </div>
-            <div>
-                <h2 class="font-bold text-lg text-gray-800">EduPortal</h2>
-                <p class="text-xs text-gray-500 capitalize"><%= user.userType %></p>
-            </div>
+            <button id="closeSidebarBtn" type="button" class="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100" aria-label="Close menu">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
     
@@ -35,6 +40,13 @@
                 <i class="fas fa-school w-5"></i>
                 <span><%= __('classes') %></span>
             </a>
+
+            <% if (user.userType === 'admin') { %>
+                <a href="/courses" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/courses') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-graduation-cap w-5"></i>
+                    <span>Courses</span>
+                </a>
+            <% } %>
 
             <a href="/subjects" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/subjects') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-book-open w-5"></i>
@@ -70,7 +82,12 @@
                 <i class="fas fa-bell w-5"></i>
                 <span><%= __('notifications') %></span>
             </a>
-        
+
+            <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-notes-medical w-5"></i>
+                <span>Guidance</span>
+            </a>
+
         <%# ==================== TEACHER MENU ==================== %>
         <% } else if (user.userType === 'teacher') { %>
         
@@ -78,13 +95,13 @@
                 <i class="fas fa-home w-5"></i>
                 <span><%= __('dashboard') %></span>
             </a>
-            
+
             <a href="/teacher/my-classes" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/teacher/my-classes') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-users w-5"></i>
                 <span><%= __('my_classes') %></span>
             </a>
             
-            <a href="/teacher/mark-attendance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/teacher/mark-attendance') ? 'bg-blue-50 text-blue-600' : '' %>">
+            <a href="/teacher/mark-attendance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= (currentPath.startsWith('/teacher/mark-attendance') || currentPath.startsWith('/attendance/mark')) ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-clipboard-check w-5"></i>
                 <span><%= __('mark_attendance') %></span>
             </a>
@@ -108,6 +125,16 @@
                 <i class="fas fa-bell w-5"></i>
                 <span><%= __('notifications') %></span>
             </a>
+
+            <a href="/events" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/events') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-calendar w-5"></i>
+                <span><%= __('events') %></span>
+            </a>
+
+            <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-notes-medical w-5"></i>
+                <span>Guidance</span>
+            </a>
         
         <%# ==================== STUDENT MENU ==================== %>
         <% } else if (user.userType === 'student') { %>
@@ -116,7 +143,7 @@
                 <i class="fas fa-home w-5"></i>
                 <span><%= __('dashboard') %></span>
             </a>
-            
+
             <a href="/student/my-attendance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/student/my-attendance') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-clipboard-check w-5"></i>
                 <span><%= __('my_attendance') %></span>
@@ -146,6 +173,16 @@
                 <i class="fas fa-bell w-5"></i>
                 <span><%= __('notifications') %></span>
             </a>
+
+            <a href="/events" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/events') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-calendar w-5"></i>
+                <span><%= __('events') %></span>
+            </a>
+
+            <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-notes-medical w-5"></i>
+                <span>Guidance</span>
+            </a>
         
         <%# ==================== PARENT MENU ==================== %>
         <% } else if (user.userType === 'parent') { %>
@@ -154,7 +191,7 @@
                 <i class="fas fa-home w-5"></i>
                 <span><%= __('dashboard') %></span>
             </a>
-            
+
             <a href="/parent/my-children" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/parent/my-children') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-user-graduate w-5"></i>
                 <span><%= __('my_children') %></span>
@@ -178,6 +215,11 @@
             <a href="/notifications" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/notifications') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-bell w-5"></i>
                 <span><%= __('notifications') %></span>
+            </a>
+
+            <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
+                <i class="fas fa-notes-medical w-5"></i>
+                <span>Guidance</span>
             </a>
         
         <% } %>

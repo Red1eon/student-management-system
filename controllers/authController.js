@@ -1,6 +1,6 @@
 const UserModel = require('../models/userModel');
 const StudentModel = require('../models/studentModel');
-const TeacherModel = require('../models/TeacherModel');
+const TeacherModel = require('../models/teacherModel');
 const { logAudit } = require('../utils/auditLogger');
 
 const authController = {

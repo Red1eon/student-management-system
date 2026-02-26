@@ -23,19 +23,21 @@
       <thead class="bg-gray-50">
         <tr>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('fee') %></th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('type') %></th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('amount') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Plan</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('due_date') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
         <% if (!fees || fees.length === 0) { %>
-          <tr><td colspan="3" class="px-6 py-4 text-center text-gray-500"><%= __('no_fee_records') %></td></tr>
+          <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500"><%= __('no_fee_records') %></td></tr>
         <% } else { %>
           <% fees.forEach((f) => { %>
             <tr>
               <td class="px-6 py-4"><%= f.fee_name %></td>
-              <td class="px-6 py-4"><%= f.fee_type %></td>
               <td class="px-6 py-4"><%= Number(f.amount || 0).toFixed(2) %></td>
+              <td class="px-6 py-4 capitalize"><%= String(f.payment_plan || '-').replace('_', ' ') %></td>
+              <td class="px-6 py-4"><%= f.due_date || '-' %></td>
             </tr>
           <% }) %>
         <% } %>

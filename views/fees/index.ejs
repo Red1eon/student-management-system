@@ -39,11 +39,23 @@
                     </div>
                     <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
                         <span class="text-yellow-800 font-medium">Pending</span>
-                        <span class="text-yellow-600 font-bold">$0</span>
+                        <span class="text-yellow-600 font-bold">$<%= typeof stats !== 'undefined' ? (stats.pending_amount || 0) : 0 %></span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span class="text-blue-800 font-medium">Students Enrolled</span>
+                        <span class="text-blue-600 font-bold"><%= typeof stats !== 'undefined' ? (stats.total_students || 0) : 0 %></span>
                     </div>
                 </div>
             </div>
             
+            <a href="/fees/structure" class="block w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-semibold text-center shadow-lg">
+                <i class="fas fa-layer-group mr-2"></i> Fee Structure
+            </a>
+            
+            <a href="/fees/add?fee_type=tuition&frequency=one-time&return_to=/fees" class="block w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-semibold text-center shadow-lg">
+                <i class="fas fa-plus mr-2"></i> Add Global Fee
+            </a>
+             
             <a href="/fees/record" class="block w-full bg-yellow-500 text-white py-3 rounded-lg hover:bg-yellow-600 font-semibold text-center shadow-lg">
                 <i class="fas fa-plus mr-2"></i> Record Payment
             </a>

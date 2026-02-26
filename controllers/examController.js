@@ -1,6 +1,6 @@
 const ExamModel = require('../models/examModel');
 const ExamResultModel = require('../models/examResultModel');
-const ClassModel = require('../models/ClassModel');
+const ClassModel = require('../models/classModel');
 const SubjectModel = require('../models/subjectModel');
 const StudentModel = require('../models/studentModel');
 const { calculateGrade } = require('../utils/helpers');
@@ -167,7 +167,7 @@ const examController = {
   getExamDetail: async (req, res) => {
     try {
       const exam = await ExamModel.findById(req.params.id);
-      if (!exam) return res.status(404).render('404');
+      if (!exam) return res.status(404).render('404', { title: 'Page Not Found' });
       
       const results = await ExamResultModel.getByExam(req.params.id);
       const students = await StudentModel.getAll({ class_id: exam.class_id });
@@ -202,6 +202,7 @@ const examController = {
   getStudentResults: async (req, res) => {
     try {
       const student = await StudentModel.findById(req.params.studentId);
+      if (!student) return res.status(404).render('404', { title: 'Page Not Found' });
       const results = await ExamResultModel.getByStudent(req.params.studentId);
       
       res.render('exams/student-results', { title: 'Student Results', student, results });

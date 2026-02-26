@@ -142,6 +142,44 @@ class NotificationModel {
       [limit]
     );
   }
+
+  static async createForUserIds({ title, message, notification_type = 'general', sent_by = null, userIds = [] }) {
+    if (!Array.isArray(userIds) || userIds.length === 0) return null;
+    const uniqueIds = Array.from(new Set(userIds.filter(Boolean)));
+    if (!uniqueIds.length) return null;
+
+    const result = await runQuery(
+      `INSERT INTO notifications (title, message, notification_type, target_user_type, target_class_id, sent_by, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [title, message, notification_type, 'all', null, sent_by, null]
+    );
+
+    const db = require('../config/database').getDatabase();
+    await new Promise((resolve, reject) => {
+      const stmt = db.prepare('INSERT OR IGNORE INTO user_notifications (notification_id, user_id) VALUES (?, ?)');
+      let pending = uniqueIds.length;
+      let failed = false;
+
+      uniqueIds.forEach((userId) => {
+        stmt.run([result.id, userId], (err) => {
+          if (failed) return;
+          if (err) {
+            failed = true;
+            return stmt.finalize(() => reject(err));
+          }
+          pending -= 1;
+          if (pending === 0) {
+            stmt.finalize((finalizeErr) => {
+              if (finalizeErr) reject(finalizeErr);
+              else resolve();
+            });
+          }
+        });
+      });
+    });
+
+    return result.id;
+  }
 }
 
 module.exports = NotificationModel;

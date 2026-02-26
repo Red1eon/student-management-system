@@ -23,6 +23,8 @@
                     <p><i class="fas fa-chalkboard-teacher w-5"></i> <%= c.teacher_name || __('no_teacher_assigned') %></p>
                     <p><i class="fas fa-users w-5"></i> <%= __('capacity') %>: <%= c.capacity %></p>
                     <p><i class="fas fa-door-open w-5"></i> <%= __('room') %>: <%= c.room_number || __('na') %></p>
+                    <p><i class="fas fa-graduation-cap w-5"></i> Course: <%= c.course_name || (c.course_type || 'other').replace('_', ' ') %></p>
+                    <p><i class="fas fa-money-bill-wave w-5"></i> Fee: $<%= Number(c.course_fee || 0).toFixed(2) %> (<%= (c.fee_payment_plan || 'one_time').replace('_', ' ') %>)</p>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <a href="/classes/<%= c.class_id %>" class="text-center bg-blue-50 text-blue-600 py-2 rounded-lg hover:bg-blue-100"><%= __('view') %></a>

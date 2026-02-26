@@ -54,6 +54,12 @@
     transform: translateX(5px);
 }
 
+@media (max-width: 767px) {
+    .sidebar-item:hover {
+        transform: none;
+    }
+}
+
 .card-hover {
     transition: all 0.3s ease;
 }

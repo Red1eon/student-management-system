@@ -1,86 +1,868 @@
-<div class="max-w-4xl mx-auto animate-fade-in">
-    <div class="bg-white rounded-xl shadow-lg p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">Mark Attendance</h2>
+﻿<style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container-att {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
 
-        <form action="/attendance/mark" method="GET" class="mb-8 bg-gray-50 p-4 rounded-lg">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
-                    <select name="class_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
-                        <option value="">Select Class</option>
-                        <% classes.forEach(c => { %>
-                            <option value="<%= c.class_id %>" <%= selectedClass == c.class_id ? 'selected' : '' %>><%= c.class_name %> <%= c.section %></option>
-                        <% }) %>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                    <input type="date" name="date" required value="<%= selectedDate || new Date().toISOString().split('T')[0] %>" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg" onchange="this.form.submit()">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Load Students</button>
-                </div>
-            </div>
-        </form>
+  .header-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
 
-        <% if (students.length > 0) { %>
-        <form action="/attendance/mark" method="POST" class="space-y-4">
-            <input type="hidden" name="class_id" value="<%= selectedClass %>">
-            <input type="hidden" name="date" value="<%= selectedDate %>">
+  .subtitle {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
 
-            <div class="space-y-2">
-                <% students.forEach((s, index) => { 
-                    const existing = existingAttendance.find(a => a.student_id === s.student_id);
-                %>
-                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                            <%= s.first_name[0] %><%= s.last_name[0] %>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-800"><%= s.first_name %> <%= s.last_name %></p>
-                            <p class="text-sm text-gray-500">Roll: <%= s.roll_number || 'N/A' %></p>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2">
-                        <label class="cursor-pointer">
-                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="present" 
-                                   <%= existing?.status === 'present' ? 'checked' : '' %> class="sr-only peer">
-                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-green-500 peer-checked:text-white">Present</span>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="absent" 
-                                   <%= existing?.status === 'absent' ? 'checked' : '' %> class="sr-only peer">
-                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-red-500 peer-checked:text-white">Absent</span>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="late" 
-                                   <%= existing?.status === 'late' ? 'checked' : '' %> class="sr-only peer">
-                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-yellow-500 peer-checked:text-white">Late</span>
-                        </label>
-                        <label class="cursor-pointer">
-                            <input type="radio" name="attendance[<%= s.student_id %>][status]" value="excused" 
-                                   <%= existing?.status === 'excused' ? 'checked' : '' %> class="sr-only peer">
-                            <span class="px-3 py-1 rounded text-sm font-medium bg-gray-200 text-gray-600 peer-checked:bg-blue-500 peer-checked:text-white">Excused</span>
-                        </label>
-                    </div>
-                </div>
-                <input type="hidden" name="attendance[<%= s.student_id %>][remarks]" value="">
-                <% }) %>
-            </div>
+  .title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 
-            <div class="flex justify-end pt-4">
-                <button type="submit" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">
-                    Save Attendance
-                </button>
-            </div>
-        </form>
-        <% } else if (selectedClass) { %>
-        <div class="text-center py-12 text-gray-500">
-            <i class="fas fa-users text-4xl mb-4"></i>
-            <p>No students found in this class</p>
-        </div>
-        <% } %>
+  .main-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: #223043;
+    letter-spacing: 1px;
+  }
+
+  .badge {
+    background: #4a6fa5;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .status-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .status-card {
+    border: 1px solid #dbe7ff;
+    background: #f1f6ff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .status-title {
+    font-weight: 700;
+    color: #315ea9;
+    margin-bottom: 4px;
+  }
+
+  .view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .toggle-btn {
+    padding: 10px 20px;
+    border: 2px solid #d8dde6;
+    background: #fff;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .toggle-btn.active {
+    background: #4a6fa5;
+    color: #fff;
+    border-color: #4a6fa5;
+    box-shadow: 0 3px 10px rgba(74, 111, 165, 0.3);
+  }
+
+  .main-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e7e9ee;
+    overflow: hidden;
+  }
+
+  .toolbar {
+    background: #f8f9fb;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e7e9ee;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 10px;
+    flex: 1;
+  }
+
+  .toolbar-item label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .toolbar-item select,
+  .toolbar-item input {
+    width: 100%;
+    border: 1px solid #d4dae4;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    background: #fff;
+  }
+
+  .search-btn {
+    background: #4a6fa5;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .action-bar {
+    padding: 11px 16px;
+    border-bottom: 1px solid #e7e9ee;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .action-link {
+    color: #3e66a6;
+    font-weight: 600;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .stats-bar {
+    padding: 12px 16px;
+    background: #f3f7fb;
+    border-bottom: 1px solid #e7e9ee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .student-count {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .student-count strong {
+    color: #1f2937;
+    font-size: 18px;
+    margin-right: 4px;
+  }
+
+  .view-option {
+    border: 1px solid #d4dae4;
+    border-radius: 6px;
+    background: #fff;
+    color: #4b5563;
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .view-option.active {
+    background: #4a6fa5;
+    border-color: #4a6fa5;
+    color: #fff;
+  }
+
+  .table-container {
+    overflow: auto;
+    max-height: 62vh;
+  }
+
+  .attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .attendance-table th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    background: #f8f9fb;
+    border-bottom: 2px solid #e7e9ee;
+    color: #475569;
+    padding: 10px 7px;
+    text-align: center;
+  }
+
+  .attendance-table td {
+    border-bottom: 1px solid #eef2f7;
+    padding: 8px 7px;
+    text-align: center;
+  }
+
+  .attendance-table tr:hover {
+    background: #fafcff;
+  }
+
+  .student-info {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-align: left;
+    min-width: 220px;
+  }
+
+  .student-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #dce9ff;
+    color: #1d4ed8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .student-id {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  .student-name {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 13px;
+  }
+
+  .attendance-cell {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid #cfd8e5;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .attendance-cell.present {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #7cc584;
+  }
+
+  .attendance-cell.absent {
+    background: #ffebee;
+    color: #c62828;
+    border-color: #ec9a9a;
+  }
+
+  .attendance-cell.late {
+    background: #fff3e0;
+    color: #ef6c00;
+    border-color: #f2be82;
+  }
+
+  .attendance-cell.excused {
+    background: #e3f2fd;
+    color: #1565c0;
+    border-color: #8dbce8;
+  }
+
+  .stat-number {
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  .rate-good {
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .rate-warning {
+    color: #ca8a04;
+    background: #fef9c3;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .rate-danger {
+    color: #dc2626;
+    background: #fee2e2;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .daily-view {
+
+    display: none;
+  }
+
+  .daily-view.active {
+    display: block;
+  }
+
+  .period-tabs {
+    display: flex;
+    border-bottom: 1px solid #e7e9ee;
+    background: #f8f9fb;
+  }
+
+  .period-tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .period-tab.active {
+    color: #315ea9;
+    border-bottom-color: #4a6fa5;
+    background: #fff;
+  }
+
+  .status-selector {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .status-btn {
+    padding: 4px 8px;
+    border: 1px solid #d4dae4;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  .status-btn.active.present { background: #2e7d32; border-color: #2e7d32; color: #fff; }
+  .status-btn.active.absent { background: #c62828; border-color: #c62828; color: #fff; }
+  .status-btn.active.late { background: #ef6c00; border-color: #ef6c00; color: #fff; }
+  .status-btn.active.excused { background: #1565c0; border-color: #1565c0; color: #fff; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 13px 16px;
+    border-top: 1px solid #e7e9ee;
+    background: #f8f9fb;
+    font-size: 12px;
+    color: #475569;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend-box {
+    width: 15px;
+    height: 15px;
+    border-radius: 4px;
+  }
+
+  .save-row {
+    padding: 13px 16px;
+    border-top: 1px solid #e7e9ee;
+    display: flex;
+    justify-content: end;
+    background: #fff;
+  }
+
+  .save-btn {
+    background: #16a34a;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .save-btn:disabled,
+  .view-option:disabled,
+  .status-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .bulk-controls {
+    display: none;
+    padding: 10px 16px;
+    border-bottom: 1px solid #e7e9ee;
+    background: #f8fafc;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .bulk-controls.active {
+    display: flex;
+  }
+
+  .bulk-btn {
+    border: 1px solid #cdd6e4;
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (max-width: 900px) {
+    .toolbar-left {
+      grid-template-columns: 1fr;
+    }
+
+    .status-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<%
+  const selectedMode = mode === 'month' ? 'month' : 'day';
+  const studentTotal = (students || []).length;
+  const dayPeriods = (periodLabels && periodLabels.length) ? periodLabels : ['P1', 'P2', 'P3', 'P4'];
+  const dayDateValue = selectedDateIso || selectedDate || new Date().toISOString().slice(0, 10);
+  const canEditDayAttendance = selectedMode === 'day' ? !!dateEditable : true;
+%>
+
+<div class="container-att">
+  <div class="header-section">
+    <div class="subtitle">Early follow-up based on attendance trends</div>
+    <div class="title-wrapper">
+      <h1 class="main-title">Attendance Management</h1>
+      <span class="badge">Student Management</span>
     </div>
+  </div>
+
+  <% if (schoolStatus) { %>
+    <div class="status-cards">
+      <div class="status-card">
+        <div class="status-title">Today </div>
+        <div><%= schoolStatus.today.date %> - <%= schoolStatus.today.label %></div>
+      </div>
+      <div class="status-card">
+        <div class="status-title">Tomorrow </div>
+        <div><%= schoolStatus.tomorrow.date %> - <%= schoolStatus.tomorrow.label %></div>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (query && query.success) { %>
+    <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"><%= query.success %></div>
+  <% } %>
+  <% if (query && query.error) { %>
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"><%= query.error %></div>
+  <% } %>
+
+  <div class="view-toggle">
+    <button type="button" class="toggle-btn <%= selectedMode === 'month' ? 'active' : '' %>" onclick="setModeAndSearch('month')">Monthly View</button>
+    <button type="button" class="toggle-btn <%= selectedMode === 'day' ? 'active' : '' %>" onclick="setModeAndSearch('day')">Daily View</button>
+  </div>
+
+  <div class="main-card">
+    <form id="filterForm" action="/attendance/mark" method="GET" class="toolbar">
+      <input type="hidden" id="modeInput" name="mode" value="<%= selectedMode %>">
+      <div class="toolbar-left">
+        <div class="toolbar-item">
+          <label>Class</label>
+          <select name="class_id" required>
+            <option value="">Select Class</option>
+            <% classes.forEach((c) => { %>
+              <option value="<%= c.class_id %>" <%= String(selectedClass || '') === String(c.class_id) ? 'selected' : '' %>><%= c.class_name %> <%= c.section %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="toolbar-item" id="monthField" style="display:<%= selectedMode === 'month' ? 'block' : 'none' %>">
+          <label>Month</label>
+          <input type="month" name="month" value="<%= selectedMonth || new Date().toISOString().slice(0, 7) %>">
+        </div>
+
+        <div class="toolbar-item" id="dateField" style="display:<%= selectedMode === 'day' ? 'block' : 'none' %>">
+          <label>Date</label>
+          <input type="date" name="date" value="<%= dayDateValue %>">
+        </div>
+      </div>
+      <button type="submit" class="search-btn">Search</button>
+    </form>
+
+    <div class="action-bar">
+      <button type="button" class="action-link" id="bulkModeBtn" onclick="toggleBulkMode()">Bulk Input Mode</button>
+      <label><input type="checkbox" id="highlightAbsent"> Highlight Absentees</label>
+      <label><input type="checkbox" checked> Immigration Format</label>
+    </div>
+
+    <div class="stats-bar">
+      <div class="student-count">Total Students <strong><%= studentTotal %></strong></div>
+      <div>
+        <button type="button" class="view-option active" id="scopeFullBtn" onclick="toggleScope('full')">Full Enrollment</button>
+        <button type="button" class="view-option" id="scopeMonthBtn" onclick="toggleScope('month')">This Month</button>
+      </div>
+    </div>
+
+    <% if (students && students.length > 0) { %>
+      <div id="monthlyView" style="display:<%= selectedMode === 'month' ? 'block' : 'none' %>">
+        <form action="/attendance/mark" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mode" value="month">
+          <input type="hidden" name="class_id" value="<%= selectedClass %>">
+          <input type="hidden" name="month" value="<%= selectedMonth %>">
+          <div id="bulkControls" class="bulk-controls">
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('present')">Fill All Present</button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('absent')">Fill All Absent</button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('late')">Fill All Late</button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('excused')">Fill All Excused</button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('')">Clear All</button>
+          </div>
+
+          <div class="table-container">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding-left:16px;">Student Info</th>
+                  <th>Present</th>
+                  <th>Absent</th>
+                  <th>Late</th>
+                  <th>Excused</th>
+                  <th>Rate</th>
+                  <% (monthDates || []).forEach((d) => { %>
+                    <th><%= d.slice(5) %></th>
+                  <% }) %>
+                </tr>
+              </thead>
+              <tbody>
+                <% students.forEach((s) => {
+                  const sid = String(s.student_id);
+                  const initials = ((s.first_name || '').charAt(0) + (s.last_name || '').charAt(0)).toUpperCase();
+                  const row = (existingByStudent && existingByStudent[sid]) || {};
+                  const sum = (monthlySummaries && monthlySummaries[sid]) || { present: 0, absent: 0, late: 0, excused: 0, rate: 0 };
+                %>
+                  <tr data-student-row="<%= sid %>">
+                    <td style="text-align:left;padding-left:16px;">
+                      <div class="student-info">
+                        <div class="student-avatar"><%= initials || 'ST' %></div>
+                        <div>
+                          <div class="student-id">ID: <%= s.admission_number || s.roll_number || ('S' + s.student_id) %></div>
+                          <div class="student-name"><%= s.first_name %> <%= s.last_name %></div>
+                        </div>
+                      </div>
+                      <input type="hidden" name="attendance[<%= sid %>][remarks]" value="">
+                    </td>
+                    <td><span class="stat-number"><%= sum.present %></span></td>
+                    <td><span class="stat-number"><%= sum.absent %></span></td>
+                    <td><span class="stat-number"><%= sum.late %></span></td>
+                    <td><span class="stat-number"><%= sum.excused %></span></td>
+                    <td>
+                      <span class="stat-number rate-<%= sum.rate >= 90 ? 'good' : sum.rate >= 75 ? 'warning' : 'danger' %>" 
+                            title="Effective Absent: <%= sum.effectiveAbsent %> (3 late = 1 absent)">
+                        <%= sum.rate %>%
+                      </span>
+                    </td>
+
+                    <% (monthDates || []).forEach((d) => {
+                      const st = row[d] || '';
+                      const hid = `m-${sid}-${d}`;
+                    %>
+                      <td>
+                        <input id="<%= hid %>" type="hidden" name="attendance[<%= sid %>][dates][<%= d %>]" value="<%= st %>">
+                        <button type="button" class="attendance-cell <%= st %>" data-target="<%= hid %>" onclick="cycleStatus(this)"><%= st === 'present' ? 'O' : st === 'absent' ? 'X' : st === 'late' ? 'L' : st === 'excused' ? 'E' : '' %></button>
+                      </td>
+                    <% }) %>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item"><div class="legend-box" style="background:#e8f5e9;border:1px solid #2e7d32;"></div><span>Present</span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#ffebee;border:1px solid #c62828;"></div><span>Absent</span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#fff3e0;border:1px solid #ef6c00;"></div><span>Late</span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#e3f2fd;border:1px solid #1565c0;"></div><span>Excused</span></div>
+            <div class="legend-item" style="margin-left:auto;font-size:11px;color:#64748b;">
+              <span title="3 late days = 1 absent day in rate calculation">ℹ️ Rate: 3 Late = 1 Absent | Excused = Present</span>
+            </div>
+          </div>
+
+
+          <div class="save-row">
+            <button type="submit" class="save-btn">Save Monthly Attendance</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="dailyView" class="daily-view <%= selectedMode === 'day' ? 'active' : '' %>">
+        <% if (!canEditDayAttendance) { %>
+          <div class="mx-4 mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
+            Attendance editing is locked for <strong><%= dayDateValue %></strong>. Submit a correction request if changes are needed.
+          </div>
+        <% } %>
+        <div class="action-bar">
+          <form action="/attendance/mark/periods/add" method="POST" class="flex items-end gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="class_id" value="<%= selectedClass %>">
+            <input type="hidden" name="date" value="<%= dayDateValue %>">
+            <label class="text-xs text-slate-600">New Period</label>
+            <input type="text" name="period_label" placeholder="P5" class="border border-slate-300 rounded px-2 py-1 text-xs w-20" required <%= !canEditDayAttendance ? 'disabled' : '' %>>
+            <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>>Add Period</button>
+          </form>
+          <div class="flex gap-2 flex-wrap">
+            <% dayPeriods.forEach((periodLabel) => { %>
+              <form action="/attendance/mark/periods/delete" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="class_id" value="<%= selectedClass %>">
+                <input type="hidden" name="date" value="<%= dayDateValue %>">
+                <input type="hidden" name="period_label" value="<%= periodLabel %>">
+                <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>>Delete <%= periodLabel %></button>
+              </form>
+            <% }) %>
+          </div>
+        </div>
+
+        <form action="/attendance/mark" method="POST" id="dailyAttendanceForm">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mode" value="day">
+          <input type="hidden" name="class_id" value="<%= selectedClass %>">
+          <input type="hidden" name="date" value="<%= dayDateValue %>">
+          <input type="hidden" id="activePeriodInput" name="submit_period" value="<%= dayPeriods[0] %>">
+
+          <div class="period-tabs">
+            <% dayPeriods.forEach((periodLabel, idx) => {
+              const periodKey = periodLabel.replace(/[^A-Za-z0-9_-]/g, '_');
+              const displayLabel = /^P\d+$/i.test(periodLabel) ? `Period ${periodLabel.slice(1)}` : periodLabel;
+            %>
+              <div class="period-tab <%= idx === 0 ? 'active' : '' %>" data-period-label="<%= periodLabel %>" onclick="switchPeriod('<%= periodLabel %>', '<%= periodKey %>')"><%= displayLabel %></div>
+            <% }) %>
+          </div>
+
+          <div class="table-container">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding-left:16px;">Student Info</th>
+                  <% dayPeriods.forEach((periodLabel) => {
+                    const displayLabel = /^P\d+$/i.test(periodLabel) ? `Period ${periodLabel.slice(1)}` : periodLabel;
+                  %>
+                    <th class="period-col"><%= displayLabel %></th>
+                  <% }) %>
+                </tr>
+              </thead>
+              <tbody>
+                <% students.forEach((s) => {
+                  const sid = String(s.student_id);
+                  const ex = existingAttendance.find((a) => String(a.student_id) === sid);
+                  const current = ex ? String(ex.status || '').toLowerCase() : '';
+                  const periodMap = (periodAttendanceByStudent && periodAttendanceByStudent[sid]) || {};
+                %>
+                  <tr>
+                    <td style="text-align:left;padding-left:16px;">
+                      <div class="student-info">
+                        <div class="student-avatar"><%= ((s.first_name || '').charAt(0) + (s.last_name || '').charAt(0)).toUpperCase() %></div>
+                        <div>
+                          <div class="student-id">ID: <%= s.admission_number || s.roll_number || ('S' + s.student_id) %></div>
+                          <div class="student-name"><%= s.first_name %> <%= s.last_name %></div>
+                        </div>
+                      </div>
+                      <input type="hidden" name="attendance[<%= sid %>][remarks]" value="">
+                    </td>
+                    <% dayPeriods.forEach((periodLabel) => {
+                      const periodKey = periodLabel.replace(/[^A-Za-z0-9_-]/g, '_');
+                      const pStatus = String(periodMap[periodLabel] || current || '').toLowerCase();
+                    %>
+                      <td class="period-col">
+                        <input type="hidden" id="day-status-<%= sid %>-<%= periodKey %>" name="attendance[<%= sid %>][periods][<%= periodLabel %>]" value="<%= pStatus %>">
+                        <div class="status-selector" data-student="<%= sid %>" data-period="<%= periodKey %>">
+                          <button type="button" class="status-btn present <%= pStatus === 'present' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'present')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Present</button>
+                          <button type="button" class="status-btn absent <%= pStatus === 'absent' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'absent')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Absent</button>
+                          <button type="button" class="status-btn late <%= pStatus === 'late' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'late')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Late</button>
+                          <button type="button" class="status-btn excused <%= pStatus === 'excused' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'excused')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Excused</button>
+                        </div>
+                      </td>
+                    <% }) %>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="save-row">
+            <button type="submit" class="save-btn" <%= !canEditDayAttendance ? 'disabled' : '' %>>Save Daily Attendance</button>
+          </div>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="p-10 text-center text-slate-500">
+        <% if (selectedClass) { %>
+          No students found in this class.
+        <% } else { %>
+          Select class and period to load students.
+        <% } %>
+      </div>
+    <% } %>
+  </div>
 </div>
+
+<script>
+  const STATUSES = ['', 'present', 'absent', 'late', 'excused'];
+  const STATUS_LABELS = { '': '', present: 'O', absent: 'X', late: 'L', excused: 'E' };
+
+  function setModeAndSearch(mode) {
+    const modeInput = document.getElementById('modeInput');
+    if (modeInput) modeInput.value = mode;
+    const monthField = document.getElementById('monthField');
+    const dateField = document.getElementById('dateField');
+    if (monthField) monthField.style.display = mode === 'month' ? 'block' : 'none';
+    if (dateField) dateField.style.display = mode === 'day' ? 'block' : 'none';
+    document.getElementById('filterForm').submit();
+  }
+
+  function cycleStatus(btn) {
+    const targetId = btn.getAttribute('data-target');
+    const hidden = document.getElementById(targetId);
+    const current = hidden ? hidden.value : '';
+    const idx = STATUSES.indexOf(current);
+    const next = STATUSES[(idx + 1) % STATUSES.length];
+    if (hidden) hidden.value = next;
+    btn.classList.remove('present', 'absent', 'late', 'excused');
+    if (next) btn.classList.add(next);
+    btn.textContent = STATUS_LABELS[next] || '';
+
+    const highlight = document.getElementById('highlightAbsent');
+    if (highlight && highlight.checked) {
+      applyAbsentHighlight();
+    }
+  }
+
+  function fillMonthlyStatus(status) {
+    document.querySelectorAll('input[id^=\"m-\"]').forEach((hidden) => {
+      hidden.value = status;
+      const btn = document.querySelector('button.attendance-cell[data-target=\"' + hidden.id + '\"]');
+      if (btn) {
+        btn.classList.remove('present', 'absent', 'late', 'excused');
+        if (status) btn.classList.add(status);
+        btn.textContent = STATUS_LABELS[status] || '';
+      }
+    });
+    const highlight = document.getElementById('highlightAbsent');
+    if (highlight && highlight.checked) applyAbsentHighlight();
+  }
+
+  function setDailyStatus(studentId, periodKey, status) {
+    const sid = String(studentId);
+    const pk = String(periodKey);
+    const st = String(status || '').toLowerCase();
+    if (!['present', 'absent', 'late', 'excused'].includes(st)) return;
+
+    const hidden = document.getElementById('day-status-' + sid + '-' + pk);
+    if (hidden) hidden.value = st;
+
+    const container = document.querySelector('.status-selector[data-student="' + sid + '"][data-period="' + pk + '"]');
+    if (!container) return;
+
+    // Keep base status classes on each button; only switch active state.
+    container.querySelectorAll('.status-btn').forEach((btn) => btn.classList.remove('active'));
+
+    const target = container.querySelector('.status-btn.' + st);
+    if (target) target.classList.add('active');
+  }
+
+  function switchPeriod(periodLabel, periodKey) {
+    const activePeriodInput = document.getElementById('activePeriodInput');
+    if (activePeriodInput) activePeriodInput.value = String(periodLabel);
+
+    const tabs = document.querySelectorAll('.period-tab');
+    tabs.forEach((tab) => {
+      if (tab.getAttribute('data-period-label') === String(periodLabel)) tab.classList.add('active');
+      else tab.classList.remove('active');
+    });
+  }
+
+  function toggleBulkMode() {
+    const controls = document.getElementById('bulkControls');
+    if (!controls) return;
+    controls.classList.toggle('active');
+  }
+
+  function toggleScope(scope) {
+    const fullBtn = document.getElementById('scopeFullBtn');
+    const monthBtn = document.getElementById('scopeMonthBtn');
+    if (!fullBtn || !monthBtn) return;
+    fullBtn.classList.toggle('active', scope === 'full');
+    monthBtn.classList.toggle('active', scope === 'month');
+  }
+
+  function applyAbsentHighlight() {
+    document.querySelectorAll('tr[data-student-row]').forEach((row) => {
+      const hasAbsent = row.querySelector('.attendance-cell.absent');
+      row.style.background = hasAbsent ? '#fff6f6' : '';
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const highlight = document.getElementById('highlightAbsent');
+    if (highlight) {
+      highlight.addEventListener('change', applyAbsentHighlight);
+    }
+
+    const firstTab = document.querySelector('.period-tab');
+    if (firstTab) {
+      const firstLabel = firstTab.getAttribute('data-period-label');
+      switchPeriod(firstLabel, String(firstLabel || '').replace(/[^A-Za-z0-9_-]/g, '_'));
+    }
+  });
+</script>

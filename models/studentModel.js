@@ -37,7 +37,7 @@ class StudentModel {
   // Find student by user_id
   static async findByUserId(userId) {
     return await getQuery(
-      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone,
+      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture,
         c.class_name, c.section
        FROM students s
        JOIN users u ON s.user_id = u.user_id
@@ -49,7 +49,7 @@ class StudentModel {
 
   static async getByParentUserId(parentUserId) {
     return await allQuery(
-      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.is_active,
+      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture, u.is_active,
         c.class_name, c.section
        FROM students s
        JOIN users u ON s.user_id = u.user_id
@@ -60,10 +60,24 @@ class StudentModel {
     );
   }
 
+  static async getContactUsersByStudentIds(studentIds = []) {
+    const ids = Array.from(new Set((studentIds || []).map((id) => Number(id)).filter((id) => Number.isInteger(id) && id > 0)));
+    if (!ids.length) return [];
+    const placeholders = ids.map(() => '?').join(', ');
+    return await allQuery(
+      `SELECT s.student_id, s.user_id AS student_user_id, s.parent_id,
+              u.first_name, u.last_name
+       FROM students s
+       JOIN users u ON s.user_id = u.user_id
+       WHERE s.student_id IN (${placeholders})`,
+      ids
+    );
+  }
+
   // ? ADDED: Get students by class ID (REQUIRED FOR CONTROLLER)
   static async getByClassId(classId) {
     return await allQuery(
-      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.gender,
+      `SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.gender, u.profile_picture,
         s.roll_number, s.admission_number
        FROM students s
        JOIN users u ON s.user_id = u.user_id
@@ -76,7 +90,7 @@ class StudentModel {
   // Get all students with optional filters
   static async getAll(filters = {}) {
     let sql = `
-      SELECT s.*, u.first_name, u.last_name, u.email, u.phone,
+      SELECT s.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture,
         c.class_name, c.section
       FROM students s
       JOIN users u ON s.user_id = u.user_id
@@ -177,19 +191,36 @@ class StudentModel {
   // Get fee balance for student
   static async getFeeBalance(studentId) {
     const result = await getQuery(
-      `SELECT 
-        COALESCE(SUM(fs.amount), 0) as total_fees,
-        COALESCE(SUM(fp.amount_paid), 0) as paid_amount
+      `SELECT
+        COALESCE(NULLIF(c.course_fee, 0), crs.fee_amount, 0) as total_fees,
+        COALESCE((
+          SELECT SUM(fp.amount_paid)
+          FROM fee_payments fp
+          WHERE fp.student_id = s.student_id AND fp.payment_status = 'completed'
+        ), 0) as paid_amount,
+        COALESCE(NULLIF(c.fee_payment_plan, ''), crs.fee_payment_plan, 'one_time') as fee_payment_plan,
+        (
+          SELECT MIN(fs.due_date)
+          FROM fees_structure fs
+          WHERE (fs.class_id = s.current_class_id OR fs.class_id IS NULL)
+            AND fs.due_date IS NOT NULL
+            AND TRIM(fs.due_date) <> ''
+        ) as next_due_date
        FROM students s
-       LEFT JOIN fees_structure fs ON s.current_class_id = fs.class_id
-       LEFT JOIN fee_payments fp ON s.student_id = fp.student_id AND fp.payment_status = 'completed'
+       LEFT JOIN classes c ON s.current_class_id = c.class_id
+       LEFT JOIN courses crs ON c.course_id = crs.course_id
        WHERE s.student_id = ?`,
       [studentId]
     );
+    const total = Number(result?.total_fees || 0);
+    const paid = Number(result?.paid_amount || 0);
+    const balance = Math.max(total - paid, 0);
     return {
-      total: result?.total_fees || 0,
-      paid: result?.paid_amount || 0,
-      balance: (result?.total_fees || 0) - (result?.paid_amount || 0)
+      total,
+      paid,
+      balance,
+      fee_payment_plan: result?.fee_payment_plan || 'one_time',
+      next_due_date: result?.next_due_date || null
     };
   }
 

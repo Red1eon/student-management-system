@@ -1,4 +1,84 @@
 <div class="space-y-6 animate-fade-in">
-  <h2 class="text-2xl font-bold text-gray-800">Exams   Detail</h2>
-  <p class="text-gray-500">This page is under construction. Content will be added soon.</p>
+  <a href="/exams" class="text-blue-600 hover:underline inline-block">
+    <i class="fas fa-arrow-left mr-2"></i> Back to Exams
+  </a>
+
+  <div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div><p class="text-gray-500">Exam</p><p class="font-semibold text-gray-800"><%= exam.exam_name %></p></div>
+      <div><p class="text-gray-500">Class & Subject</p><p class="font-semibold text-gray-800"><%= exam.class_name %> <%= exam.section || '' %> | <%= exam.subject_name %></p></div>
+      <div><p class="text-gray-500">Date</p><p class="font-semibold text-gray-800"><%= exam.exam_date || 'TBD' %></p></div>
+      <div><p class="text-gray-500">Type</p><p class="font-semibold text-gray-800 capitalize"><%= exam.exam_type || '-' %></p></div>
+      <div><p class="text-gray-500">Total Marks</p><p class="font-semibold text-gray-800"><%= exam.total_marks %></p></div>
+      <div><p class="text-gray-500">Passing Marks</p><p class="font-semibold text-gray-800"><%= exam.passing_marks %></p></div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200"><h3 class="font-semibold text-gray-800">Submitted Results</h3></div>
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admission No.</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marks</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (Array.isArray(results) && results.length > 0) { %>
+          <% results.forEach((r) => { %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm text-gray-800"><%= r.student_name %></td>
+              <td class="px-6 py-4 text-sm text-gray-600"><%= r.admission_number || '-' %></td>
+              <td class="px-6 py-4 text-sm text-gray-800"><%= r.marks_obtained %> / <%= exam.total_marks %></td>
+              <td class="px-6 py-4 text-sm text-gray-700"><%= r.grade || '-' %></td>
+              <td class="px-6 py-4 text-sm text-gray-600"><%= r.remarks || '-' %></td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No results submitted yet</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+
+  <form method="POST" action="/exams/<%= exam.exam_id %>/results" class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+    <h3 class="font-semibold text-gray-800">Enter / Update Results</h3>
+    <input type="hidden" name="exam_id" value="<%= exam.exam_id %>">
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-xs text-gray-500 uppercase">Student</th>
+            <th class="px-4 py-2 text-left text-xs text-gray-500 uppercase">Marks</th>
+            <th class="px-4 py-2 text-left text-xs text-gray-500 uppercase">Remarks</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% (students || []).forEach((s, idx) => { %>
+            <% const existing = (results || []).find((r) => String(r.student_id) === String(s.student_id)); %>
+            <tr>
+              <td class="px-4 py-3 text-sm text-gray-800">
+                <input type="hidden" name="results[<%= idx %>][student_id]" value="<%= s.student_id %>">
+                <%= s.first_name %> <%= s.last_name %>
+              </td>
+              <td class="px-4 py-3">
+                <input type="number" min="0" max="<%= exam.total_marks %>" step="0.5" name="results[<%= idx %>][marks_obtained]" value="<%= existing?.marks_obtained ?? '' %>" required class="w-28 border border-gray-300 rounded px-2 py-1 text-sm">
+              </td>
+              <td class="px-4 py-3">
+                <input name="results[<%= idx %>][remarks]" value="<%= existing?.remarks || '' %>" class="w-full border border-gray-300 rounded px-2 py-1 text-sm">
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="flex justify-end">
+      <button class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">Save Results</button>
+    </div>
+  </form>
 </div>

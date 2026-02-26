@@ -12,12 +12,19 @@ const cookieParser = require('cookie-parser');
 const methodOverride = require('method-override');
 const i18n = require('./config/i18n');
 const fs = require('fs');
+const crypto = require('crypto');
 const { applySecurityHeaders } = require('./middleware/securityMiddleware');
 const { ensureCsrfToken, csrfProtection } = require('./middleware/csrfMiddleware');
 const { setLanguage } = require('./middleware/i18nMiddleware');
+const { evaluateAttendanceRisks } = require('./utils/attendanceRiskService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const appHealth = {
+  status: 'ok',
+  lastAttendanceRiskRun: null,
+  lastAttendanceRiskError: null
+};
 
 // Database initialization
 const { initializeDatabase } = require('./config/database');
@@ -53,6 +60,8 @@ const requiredViews = {
   'attendance/mark.ejs': { title: 'Mark Attendance', backLink: '/attendance' },
   'attendance/report.ejs': { title: 'Attendance Report', backLink: '/attendance' },
   'attendance/student.ejs': { title: 'Student Attendance', backLink: '/students' },
+  'attendance/period.ejs': { title: 'Period Attendance', backLink: '/attendance' },
+  'attendance/corrections.ejs': { title: 'Attendance Corrections', backLink: '/attendance' },
   
   // Exams
   'exams/index.ejs': { title: 'Exams', actions: ['create'] },
@@ -96,6 +105,11 @@ const requiredViews = {
   'classes/index.ejs': { title: 'Classes', actions: ['add'] },
   'classes/add.ejs': { title: 'Add Class', backLink: '/classes' },
   'classes/detail.ejs': { title: 'Class Details', backLink: '/classes' },
+
+  // Courses
+  'courses/index.ejs': { title: 'Courses' },
+  'courses/add.ejs': { title: 'Add Course', backLink: '/courses' },
+  'courses/edit.ejs': { title: 'Edit Course', backLink: '/courses' },
   
   // Events
   'events/index.ejs': { title: 'Events', actions: ['create', 'calendar'] },
@@ -165,7 +179,7 @@ function generateViewContent(viewPath, config) {
             <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg">Sign In</button>
         </form>
         <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Demo: admin / admin123</p>
+            <p>Use credentials assigned by your administrator</p>
         </div>
     </div>
 </body>
@@ -318,18 +332,37 @@ app.use(i18n.init);
 app.use(setLanguage);
 
 // Session configuration
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET || (
+  isProduction ? null : crypto.randomBytes(32).toString('hex')
+);
+
+if (!sessionSecret) {
+  throw new Error('SESSION_SECRET is required in production');
+}
+
+if (!process.env.SESSION_SECRET && !isProduction) {
+  console.warn('SESSION_SECRET not set; using ephemeral development secret.');
+}
+
+if (isProduction) {
+  app.set('trust proxy', 1);
+}
+
 const sessionConfig = {
   store: new SQLiteStore({ 
     db: 'sessions.db', 
     dir: './',
     concurrentDB: true 
   }),
-  secret: process.env.SESSION_SECRET || 'defaultsecretchangeme',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: { 
     maxAge: 24 * 60 * 60 * 1000,
-    secure: false
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: isProduction
   },
   name: 'school.sid'
 };
@@ -364,6 +397,15 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/health', (req, res) => {
+  res.json({
+    status: appHealth.status,
+    uptime_seconds: Math.floor(process.uptime()),
+    last_attendance_risk_run: appHealth.lastAttendanceRiskRun,
+    last_attendance_risk_error: appHealth.lastAttendanceRiskError
+  });
+});
+
 // ============================================
 // ROUTES - SPECIFIC FIRST, CATCH-ALL LAST
 // ============================================
@@ -375,12 +417,14 @@ const routes = [
   ['/teachers', './routes/teacherRoutes'],           // Admin manages teachers
   ['/teacher', './routes/teacherDashboardRoutes'],   // Teacher portal
   ['/classes', './routes/classRoutes'],
+  ['/courses', './routes/courseRoutes'],
   ['/subjects', './routes/subjectRoutes'],
   ['/attendance', './routes/attendanceRoutes'],
   ['/exams', './routes/examRoutes'],
   ['/fees', './routes/feeRoutes'],
   ['/library', './routes/libraryRoutes'],
   ['/events', './routes/eventRoutes'],
+  ['/guidance', './routes/guidanceRoutes'],
   ['/notifications', './routes/notificationRoutes'],
   ['/profile', './routes/profileRoutes'],
   ['/parent', './routes/parentRoutes'],
@@ -430,9 +474,25 @@ app.listen(PORT, '0.0.0.0', () => {
 ?  Local:   http://localhost:${PORT}             ?
 ?  Network: http://0.0.0.0:${PORT}               ?
 ??????????????????????????????????????????????????
-?  Login: admin / admin123                       ?
+?  Login: use configured school account          ?
 ??????????????????????????????????????????????????
   `);
 });
+
+async function runAttendanceRiskJob() {
+  try {
+    await evaluateAttendanceRisks({ notify: true, createGuidance: true, threshold: 75 });
+    appHealth.lastAttendanceRiskRun = new Date().toISOString();
+    appHealth.lastAttendanceRiskError = null;
+  } catch (err) {
+    appHealth.lastAttendanceRiskError = err.message;
+    console.error('Attendance risk job failed:', err.message);
+  }
+}
+
+setTimeout(() => {
+  runAttendanceRiskJob();
+  setInterval(runAttendanceRiskJob, 24 * 60 * 60 * 1000);
+}, 30 * 1000);
 
 module.exports = app;

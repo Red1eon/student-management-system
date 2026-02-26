@@ -61,11 +61,22 @@ function initializeDatabase() {
       section TEXT,
       academic_year TEXT NOT NULL,
       class_teacher_id INTEGER,
+      course_id INTEGER,
       capacity INTEGER DEFAULT 30,
       room_number TEXT,
+      course_type TEXT DEFAULT 'other',
+      course_fee REAL DEFAULT 0,
+      fee_payment_plan TEXT DEFAULT 'one_time',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (class_teacher_id) REFERENCES users(user_id) ON DELETE SET NULL
+      FOREIGN KEY (class_teacher_id) REFERENCES users(user_id) ON DELETE SET NULL,
+      FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE SET NULL
     )`);
+
+    // Backfill course-related columns for existing databases.
+    database.run(`ALTER TABLE classes ADD COLUMN course_id INTEGER`, () => {});
+    database.run(`ALTER TABLE classes ADD COLUMN course_type TEXT DEFAULT 'other'`, () => {});
+    database.run(`ALTER TABLE classes ADD COLUMN course_fee REAL DEFAULT 0`, () => {});
+    database.run(`ALTER TABLE classes ADD COLUMN fee_payment_plan TEXT DEFAULT 'one_time'`, () => {});
 
     // Subjects
     database.run(`CREATE TABLE IF NOT EXISTS subjects (
@@ -79,6 +90,62 @@ function initializeDatabase() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL
     )`);
+
+    // Courses
+    database.run(`CREATE TABLE IF NOT EXISTS courses (
+      course_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      course_name TEXT NOT NULL,
+      course_code TEXT UNIQUE NOT NULL,
+      course_type TEXT CHECK(course_type IN ('certificate', 'diploma', 'degree', 'short_course', 'other')) DEFAULT 'other',
+      fee_amount REAL NOT NULL DEFAULT 0,
+      fee_payment_plan TEXT CHECK(fee_payment_plan IN ('one_time', 'monthly', 'quarterly', 'yearly', 'installment', 'flexible')) DEFAULT 'one_time',
+      fee_payment_description TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+    )`);
+
+    // Expand legacy courses.fee_payment_plan CHECK to include "flexible".
+    database.get(`SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'courses'`, (schemaErr, schemaRow) => {
+      if (schemaErr) {
+        console.error('Error checking courses schema:', schemaErr);
+        return;
+      }
+      const coursesSql = String(schemaRow?.sql || '').toLowerCase();
+      if (!coursesSql || coursesSql.includes("'flexible'")) return;
+
+      database.serialize(() => {
+        database.run('PRAGMA foreign_keys = OFF');
+        database.run('DROP TABLE IF EXISTS courses_migrated');
+        database.run(`CREATE TABLE courses_migrated (
+          course_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          course_name TEXT NOT NULL,
+          course_code TEXT UNIQUE NOT NULL,
+          course_type TEXT CHECK(course_type IN ('certificate', 'diploma', 'degree', 'short_course', 'other')) DEFAULT 'other',
+          fee_amount REAL NOT NULL DEFAULT 0,
+          fee_payment_plan TEXT CHECK(fee_payment_plan IN ('one_time', 'monthly', 'quarterly', 'yearly', 'installment', 'flexible')) DEFAULT 'one_time',
+          fee_payment_description TEXT,
+          is_active INTEGER DEFAULT 1,
+          created_by INTEGER,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+        )`);
+        database.run(`INSERT INTO courses_migrated (
+            course_id, course_name, course_code, course_type, fee_amount, fee_payment_plan,
+            fee_payment_description, is_active, created_by, created_at, updated_at
+          )
+          SELECT
+            course_id, course_name, course_code, course_type, fee_amount, fee_payment_plan,
+            fee_payment_description, is_active, created_by, created_at, updated_at
+          FROM courses`);
+        database.run('DROP TABLE courses');
+        database.run('ALTER TABLE courses_migrated RENAME TO courses');
+        database.run('PRAGMA foreign_keys = ON');
+      });
+    });
 
     // Students
     database.run(`CREATE TABLE IF NOT EXISTS students (
@@ -224,8 +291,10 @@ function initializeDatabase() {
       is_mandatory INTEGER DEFAULT 1,
       description TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (class_id) REFERENCES classes(class_id) ON DELETE CASCADE
     )`);
+    database.run(`ALTER TABLE fees_structure ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP`, () => {});
 
     // Fee Payments
     database.run(`CREATE TABLE IF NOT EXISTS fee_payments (
@@ -350,6 +419,84 @@ function initializeDatabase() {
       FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
     )`);
 
+    // Guidance Records (student counseling/advising notes)
+    database.run(`CREATE TABLE IF NOT EXISTS guidance_records (
+      guidance_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      teacher_id INTEGER,
+      guidance_date TEXT NOT NULL,
+      category TEXT CHECK(category IN ('academic', 'behavior', 'career', 'attendance', 'wellbeing', 'other')) DEFAULT 'academic',
+      notes TEXT NOT NULL,
+      follow_up TEXT,
+      created_by INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+      FOREIGN KEY (teacher_id) REFERENCES teachers(teacher_id) ON DELETE SET NULL,
+      FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE SET NULL
+    )`);
+
+    // Attendance risk alert notification dedupe log
+    database.run(`CREATE TABLE IF NOT EXISTS attendance_alert_notifications (
+      alert_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      alert_date TEXT NOT NULL,
+      student_id INTEGER NOT NULL,
+      level TEXT CHECK(level IN ('notice', 'warning', 'danger')) NOT NULL,
+      reason TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(alert_date, student_id, level, reason),
+      FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE
+    )`);
+
+    // Attendance correction workflow
+    database.run(`CREATE TABLE IF NOT EXISTS attendance_corrections (
+      correction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      attendance_id INTEGER NOT NULL,
+      student_id INTEGER NOT NULL,
+      requested_by INTEGER NOT NULL,
+      requested_status TEXT CHECK(requested_status IN ('present', 'absent', 'late', 'excused')) NOT NULL,
+      reason TEXT NOT NULL,
+      status TEXT CHECK(status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+      reviewed_by INTEGER,
+      review_comment TEXT,
+      reviewed_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id) ON DELETE CASCADE,
+      FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+      FOREIGN KEY (requested_by) REFERENCES users(user_id) ON DELETE SET NULL,
+      FOREIGN KEY (reviewed_by) REFERENCES users(user_id) ON DELETE SET NULL
+    )`);
+
+    // Period-level attendance (by period/subject)
+    database.run(`CREATE TABLE IF NOT EXISTS attendance_period_records (
+      period_attendance_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      class_id INTEGER NOT NULL,
+      subject_id INTEGER,
+      date TEXT NOT NULL,
+      period_label TEXT NOT NULL,
+      status TEXT CHECK(status IN ('present', 'absent', 'late', 'excused')) NOT NULL,
+      remarks TEXT,
+      marked_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(student_id, class_id, date, period_label),
+      FOREIGN KEY (student_id) REFERENCES students(student_id) ON DELETE CASCADE,
+      FOREIGN KEY (class_id) REFERENCES classes(class_id) ON DELETE CASCADE,
+       FOREIGN KEY (subject_id) REFERENCES subjects(subject_id) ON DELETE SET NULL,
+       FOREIGN KEY (marked_by) REFERENCES users(user_id) ON DELETE SET NULL
+     )`);
+
+    // Configurable period master per class
+    database.run(`CREATE TABLE IF NOT EXISTS attendance_periods (
+      period_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      class_id INTEGER NOT NULL,
+      period_label TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 1,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(class_id, period_label),
+      FOREIGN KEY (class_id) REFERENCES classes(class_id) ON DELETE CASCADE
+    )`);
+
     // ==================== DEFAULT USERS ====================
     // Ensure baseline academic data exists for admin forms.
     database.get(`SELECT COUNT(*) AS count FROM departments`, (deptErr, deptRow) => {
@@ -407,120 +554,35 @@ function initializeDatabase() {
       }
     });
     
-    // Create default admin user if not exists
-    const defaultPassword = bcrypt.hashSync('admin123', 10);
-    
-    database.get("SELECT * FROM users WHERE username = 'admin'", (err, row) => {
-      if (err) {
-        console.error('Error checking admin:', err);
-        return;
-      }
-      if (!row) {
-        database.run(
-          `INSERT INTO users (username, password_hash, email, first_name, last_name, user_type) 
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          ['admin', defaultPassword, 'admin@school.edu', 'System', 'Administrator', 'admin'],
-          (err) => {
-            if (err) console.error('Error creating admin:', err);
-            else console.log('Default admin user created');
-          }
-        );
-      }
-    });
+    // Optional admin bootstrap without hardcoded credentials.
+    const seedAdminPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (seedAdminPassword) {
+      const seedAdminUsername = process.env.SEED_ADMIN_USERNAME || 'admin';
+      const seedAdminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@school.edu';
+      const seedAdminFirstName = process.env.SEED_ADMIN_FIRST_NAME || 'System';
+      const seedAdminLastName = process.env.SEED_ADMIN_LAST_NAME || 'Administrator';
+      const seedAdminPasswordHash = bcrypt.hashSync(seedAdminPassword, 10);
 
-    // Create default teacher if not exists
-    const teacherPassword = bcrypt.hashSync('teacher123', 10);
-    
-    database.get("SELECT * FROM users WHERE username = 'teacher'", (err, row) => {
-      if (err) {
-        console.error('Error checking teacher:', err);
-        return;
-      }
-      if (!row) {
-        database.run(
-          `INSERT INTO users (username, password_hash, email, first_name, last_name, user_type) 
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          ['teacher', teacherPassword, 'teacher@school.edu', 'John', 'Smith', 'teacher'],
-          function(err) {
-            if (err) {
-              console.error('Error creating teacher user:', err);
-              return;
-            }
-            const userId = this.lastID;
-            // Create teacher record
-            database.run(
-              `INSERT INTO teachers (user_id, employee_number, hire_date, qualification, specialization) 
-               VALUES (?, ?, date('now'), 'M.Ed', 'Mathematics')`,
-              [userId, 'EMP001'],
-              (err) => {
-                if (err) console.error('Error creating teacher record:', err);
-                else console.log('Default teacher user created');
-              }
-            );
-          }
-        );
-      }
-    });
-
-
-    // Create or repair default student profile
-    const ensureStudentRecord = (userId) => {
-      database.get(
-        `SELECT student_id FROM students WHERE user_id = ?`,
-        [userId],
-        (studentErr, studentRow) => {
-          if (studentErr) {
-            console.error('Error checking student profile:', studentErr);
-            return;
-          }
-          if (studentRow) return;
-
-          database.get(`SELECT class_id FROM classes ORDER BY class_id LIMIT 1`, (classErr, classRow) => {
-            if (classErr) {
-              console.error('Error finding default class for student:', classErr);
-              return;
-            }
-
-            const classId = classRow ? classRow.class_id : null;
-            const admissionNumber = `ADM${String(userId).padStart(3, '0')}`;
-
-            database.run(
-              `INSERT INTO students (user_id, admission_number, admission_date, current_class_id, roll_number)
-               VALUES (?, ?, date('now'), ?, '001')`,
-              [userId, admissionNumber, classId],
-              (insertErr) => {
-                if (insertErr) console.error('Error creating student record:', insertErr);
-                else console.log('Default student profile ensured');
-              }
-            );
-          });
+      database.get(`SELECT * FROM users WHERE username = ?`, [seedAdminUsername], (err, row) => {
+        if (err) {
+          console.error('Error checking admin seed user:', err);
+          return;
         }
-      );
-    };
-
-    const studentPassword = bcrypt.hashSync('student123', 10);
-    database.get("SELECT user_id FROM users WHERE username = 'student'", (err, row) => {
-      if (err) {
-        console.error('Error checking student:', err);
-        return;
-      }
-      if (!row) {
-        database.run(
-          `INSERT INTO users (username, password_hash, email, first_name, last_name, user_type)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          ['student', studentPassword, 'student@school.edu', 'Jane', 'Doe', 'student'],
-          function(insertErr) {
-            if (insertErr) {
-              console.error('Error creating student user:', insertErr);
-              return;
+        if (!row) {
+          database.run(
+            `INSERT INTO users (username, password_hash, email, first_name, last_name, user_type)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [seedAdminUsername, seedAdminPasswordHash, seedAdminEmail, seedAdminFirstName, seedAdminLastName, 'admin'],
+            (insertErr) => {
+              if (insertErr) console.error('Error creating admin seed user:', insertErr);
+              else console.log('Admin seed user created');
             }
-            ensureStudentRecord(this.lastID);
-          }
-        );
-      } else {
-        ensureStudentRecord(row.user_id);
-      }
-    });
+          );
+        }
+      });
+    } else {
+      console.log('Admin seed skipped (SEED_ADMIN_PASSWORD not set)');
+    }
 
     console.log('Database tables initialized');
   });

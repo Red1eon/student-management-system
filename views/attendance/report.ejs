@@ -1,4 +1,77 @@
 <div class="space-y-6 animate-fade-in">
-  <h2 class="text-2xl font-bold text-gray-800">Attendance   Report</h2>
-  <p class="text-gray-500">This page is under construction. Content will be added soon.</p>
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Attendance Report</h2>
+    <% if (filters?.class_id) { %>
+      <a href="/attendance/report/export?class_id=<%= encodeURIComponent(filters.class_id) %>&scope=<%= encodeURIComponent(filters.scope || 'month') %>&month=<%= encodeURIComponent(filters.month || '') %>&year=<%= encodeURIComponent(filters.year || '') %>"
+         class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900">
+         <i class="fas fa-file-csv mr-2"></i> Export CSV
+      </a>
+    <% } %>
+  </div>
+
+  <form method="GET" action="/attendance/report" class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
+    <select name="class_id" class="border border-gray-300 rounded-lg px-3 py-2">
+      <option value="">Select Class</option>
+      <% (classes || []).forEach((c) => { %>
+        <option value="<%= c.class_id %>" <%= String(filters?.class_id || '') === String(c.class_id) ? 'selected' : '' %>>
+          <%= c.class_name %> <%= c.section || '' %>
+        </option>
+      <% }) %>
+    </select>
+    <select name="scope" class="border border-gray-300 rounded-lg px-3 py-2">
+      <option value="month" <%= (filters?.scope || 'month') === 'month' ? 'selected' : '' %>>This Month Scope</option>
+      <option value="overall" <%= (filters?.scope || 'month') === 'overall' ? 'selected' : '' %>>Overall Scope</option>
+    </select>
+    <input type="number" min="1" max="12" name="month" value="<%= filters?.month || '' %>" placeholder="Month" class="border border-gray-300 rounded-lg px-3 py-2">
+    <input type="number" min="2000" max="2100" name="year" value="<%= filters?.year || '' %>" placeholder="Year" class="border border-gray-300 rounded-lg px-3 py-2">
+    <input type="number" min="1" max="100" name="threshold" value="<%= filters?.threshold || 75 %>" placeholder="Min Attendance %" class="border border-gray-300 rounded-lg px-3 py-2">
+    <input type="number" min="1" name="consecutive" value="<%= filters?.consecutive || 3 %>" placeholder="Consecutive Absent" class="border border-gray-300 rounded-lg px-3 py-2">
+    <button class="bg-green-600 text-white rounded-lg px-4 py-2 hover:bg-green-700">Generate</button>
+  </form>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admission No.</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Present</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Absent</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Late</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Excused</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rate</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Consecutive Absent</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Risk</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (Array.isArray(report) && report.length > 0) { %>
+          <% report.forEach((row) => { %>
+            <% const present = row.summary?.present || 0; %>
+            <% const absent = row.summary?.absent || 0; %>
+            <% const late = row.summary?.late || 0; %>
+            <% const excused = row.summary?.excused || 0; %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 text-sm text-gray-800"><%= row.first_name %> <%= row.last_name %></td>
+              <td class="px-6 py-4 text-sm text-gray-600"><%= row.admission_number %></td>
+              <td class="px-6 py-4 text-sm text-green-700"><%= present %></td>
+              <td class="px-6 py-4 text-sm text-red-700"><%= absent %></td>
+              <td class="px-6 py-4 text-sm text-yellow-700"><%= late %></td>
+              <td class="px-6 py-4 text-sm text-blue-700"><%= excused %></td>
+              <td class="px-6 py-4 text-sm <%= row.lowAttendance ? 'text-red-700 font-semibold' : 'text-gray-700' %>"><%= row.summary?.attendance_rate || 0 %>%</td>
+              <td class="px-6 py-4 text-sm <%= row.riskConsecutive ? 'text-red-700 font-semibold' : 'text-gray-700' %>"><%= row.consecutiveAbsences || 0 %></td>
+              <td class="px-6 py-4 text-sm text-gray-700">
+                <%= row.lowAttendance ? 'Low Attendance' : '' %>
+                <%= (row.lowAttendance && row.riskConsecutive) ? ' + ' : '' %>
+                <%= row.riskConsecutive ? 'Consecutive Absence' : '' %>
+                <%= (!row.lowAttendance && !row.riskConsecutive) ? 'Normal' : '' %>
+              </td>
+            </tr>
+          <% }) %>
+        <% } else { %>
+          <tr><td colspan="9" class="px-6 py-8 text-center text-gray-500">No report data. Select class and scope.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </div>

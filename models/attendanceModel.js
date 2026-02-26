@@ -1,6 +1,33 @@
 const { runQuery, getQuery, allQuery } = require('../config/database');
 
 class AttendanceModel {
+  static summarizeStatsRows(statsRows = []) {
+    const summary = {
+      present: 0,
+      absent: 0,
+      late: 0,
+      excused: 0,
+      total: 0,
+      attended: 0,
+      attendance_rate: 0
+    };
+
+    statsRows.forEach((row) => {
+      const status = String(row.status || '').toLowerCase();
+      const count = Number(row.count || 0);
+      if (!Number.isFinite(count)) return;
+      if (status === 'present') summary.present += count;
+      else if (status === 'absent') summary.absent += count;
+      else if (status === 'late') summary.late += count;
+      else if (status === 'excused') summary.excused += count;
+    });
+
+    summary.total = summary.present + summary.absent + summary.late + summary.excused;
+    summary.attended = summary.present + summary.late + summary.excused;
+    summary.attendance_rate = summary.total > 0 ? Number(((summary.attended / summary.total) * 100).toFixed(2)) : 0;
+    return summary;
+  }
+
   static async create(attendanceData) {
     const { student_id, class_id, date, status, remarks, marked_by } = attendanceData;
     const result = await runQuery(
@@ -88,6 +115,15 @@ class AttendanceModel {
     );
   }
 
+  static async getByStudentAll(studentId) {
+    return await allQuery(
+      `SELECT * FROM attendance
+       WHERE student_id = ?
+       ORDER BY date DESC`,
+      [studentId]
+    );
+  }
+
   // Updated: Simplified query to return first_name and last_name separately
   static async getByClass(classId, date) {
     return await allQuery(
@@ -98,6 +134,18 @@ class AttendanceModel {
        WHERE a.class_id = ? AND a.date = ?
        ORDER BY u.last_name, u.first_name`,
       [classId, date]
+    );
+  }
+
+  static async getByClassMonth(classId, month, year) {
+    return await allQuery(
+      `SELECT a.*, u.first_name, u.last_name
+       FROM attendance a
+       JOIN students s ON a.student_id = s.student_id
+       JOIN users u ON s.user_id = u.user_id
+       WHERE a.class_id = ? AND strftime('%m', a.date) = ? AND strftime('%Y', a.date) = ?
+       ORDER BY a.date ASC, u.last_name, u.first_name`,
+      [classId, String(month).padStart(2, '0'), String(year)]
     );
   }
 
@@ -135,6 +183,33 @@ class AttendanceModel {
        GROUP BY status`,
       [studentId, month.padStart(2, '0'), year.toString()]
     );
+  }
+
+  static async getOverallStats(studentId) {
+    return await allQuery(
+      `SELECT status, COUNT(*) as count
+       FROM attendance
+       WHERE student_id = ?
+       GROUP BY status`,
+      [studentId]
+    );
+  }
+
+  static async getCurrentConsecutiveAbsences(studentId) {
+    const rows = await allQuery(
+      `SELECT status
+       FROM attendance
+       WHERE student_id = ?
+       ORDER BY date DESC`,
+      [studentId]
+    );
+
+    let streak = 0;
+    for (const row of rows) {
+      if (String(row.status).toLowerCase() === 'absent') streak += 1;
+      else break;
+    }
+    return streak;
   }
 
   static async update(attendanceId, updateData) {

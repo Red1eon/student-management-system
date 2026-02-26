@@ -74,14 +74,38 @@ class FeePaymentModel {
     );
   }
 
-  static async getPaymentStats(academicYear) {
+  static async getPaymentStats() {
     return await getQuery(
-      `SELECT 
-        COALESCE(SUM(amount_paid), 0) as total_collected,
-        COUNT(DISTINCT student_id) as paying_students
-       FROM fee_payments
-       WHERE payment_status = 'completed' AND strftime('%Y', payment_date) = ?`,
-      [academicYear]
+      `SELECT
+        COALESCE((
+          SELECT SUM(fp.amount_paid)
+          FROM fee_payments fp
+          JOIN students s ON fp.student_id = s.student_id
+          JOIN users u ON s.user_id = u.user_id
+          WHERE fp.payment_status = 'completed' AND u.is_active = 1
+        ), 0) as total_collected,
+        COALESCE((
+          SELECT COUNT(DISTINCT fp.student_id)
+          FROM fee_payments fp
+          JOIN students s ON fp.student_id = s.student_id
+          JOIN users u ON s.user_id = u.user_id
+          WHERE fp.payment_status = 'completed' AND u.is_active = 1
+        ), 0) as paying_students,
+        COALESCE((
+          SELECT COUNT(*)
+          FROM students s
+          JOIN users u ON s.user_id = u.user_id
+          WHERE u.is_active = 1
+        ), 0) as total_students,
+        COALESCE((
+          SELECT SUM(COALESCE(NULLIF(c.course_fee, 0), crs.fee_amount, 0))
+          FROM students s
+          JOIN users u ON s.user_id = u.user_id
+          LEFT JOIN classes c ON s.current_class_id = c.class_id
+          LEFT JOIN courses crs ON c.course_id = crs.course_id
+          WHERE u.is_active = 1
+        ), 0) as total_expected`,
+      []
     );
   }
 
@@ -90,6 +114,29 @@ class FeePaymentModel {
       'UPDATE fee_payments SET payment_status = ? WHERE payment_id = ?',
       [status, paymentId]
     );
+    return result.changes > 0;
+  }
+
+  static async update(paymentId, paymentData) {
+    const {
+      student_id,
+      fee_id,
+      amount_paid,
+      payment_date,
+      payment_method,
+      transaction_id,
+      remarks,
+      received_by
+    } = paymentData;
+
+    const result = await runQuery(
+      `UPDATE fee_payments
+       SET student_id = ?, fee_id = ?, amount_paid = ?, payment_date = ?, payment_method = ?,
+           transaction_id = ?, remarks = ?, received_by = ?
+       WHERE payment_id = ?`,
+      [student_id, fee_id, amount_paid, payment_date, payment_method, transaction_id, remarks, received_by, paymentId]
+    );
+
     return result.changes > 0;
   }
 

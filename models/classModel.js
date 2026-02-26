@@ -4,22 +4,36 @@ class ClassModel {
   static async create(classData) {
     const {
       class_name, class_code, section, academic_year,
-      class_teacher_id, capacity, room_number
+      class_teacher_id, course_id, capacity, room_number, course_type,
+      course_fee, fee_payment_plan
     } = classData;
     
     const result = await runQuery(
-      `INSERT INTO classes (class_name, class_code, section, academic_year, class_teacher_id, capacity, room_number)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [class_name, class_code, section, academic_year, class_teacher_id, capacity || 30, room_number]
+      `INSERT INTO classes (class_name, class_code, section, academic_year, class_teacher_id, course_id, capacity, room_number, course_type, course_fee, fee_payment_plan)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        class_name,
+        class_code,
+        section,
+        academic_year,
+        class_teacher_id,
+        course_id || null,
+        capacity || 30,
+        room_number,
+        course_type || 'other',
+        course_fee || 0,
+        fee_payment_plan || 'one_time'
+      ]
     );
     return result.id;
   }
 
   static async findById(classId) {
     return await getQuery(
-      `SELECT c.*, u.first_name || ' ' || u.last_name as teacher_name
+      `SELECT c.*, u.first_name || ' ' || u.last_name as teacher_name, crs.course_name
        FROM classes c
        LEFT JOIN users u ON c.class_teacher_id = u.user_id
+       LEFT JOIN courses crs ON c.course_id = crs.course_id
        WHERE c.class_id = ?`,
       [classId]
     );
@@ -32,9 +46,10 @@ class ClassModel {
   // ? THIS WAS MISSING - ADD IT
   static async getAll() {
     return await allQuery(
-      `SELECT c.*, u.first_name || ' ' || u.last_name as teacher_name
+      `SELECT c.*, u.first_name || ' ' || u.last_name as teacher_name, crs.course_name
        FROM classes c
        LEFT JOIN users u ON c.class_teacher_id = u.user_id
+       LEFT JOIN courses crs ON c.course_id = crs.course_id
        ORDER BY c.class_name, c.section`
     );
   }

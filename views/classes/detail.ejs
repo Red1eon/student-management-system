@@ -25,6 +25,18 @@
       <p class="text-sm text-gray-500"><%= __('room') %></p>
       <p class="text-lg font-semibold text-gray-800"><%= classData.room_number || __('na') %></p>
     </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500">Course Type</p>
+      <p class="text-lg font-semibold text-gray-800"><%= classData.course_name || (classData.course_type || 'other').replace('_', ' ') %></p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500">Course Fee</p>
+      <p class="text-lg font-semibold text-gray-800">$<%= Number(classData.course_fee || 0).toFixed(2) %></p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4">
+      <p class="text-sm text-gray-500">Payment Plan</p>
+      <p class="text-lg font-semibold text-gray-800"><%= (classData.fee_payment_plan || 'one_time').replace('_', ' ') %></p>
+    </div>
   </div>
 
   <div class="bg-white rounded-xl shadow p-5">

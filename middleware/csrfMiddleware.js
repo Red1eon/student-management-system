@@ -15,7 +15,10 @@ function csrfProtection(req, res, next) {
   if (safeMethods.has(req.method)) return next();
 
   const sessionToken = req.session?.csrfToken;
-  const incomingToken = req.body?._csrf || req.headers['x-csrf-token'] || req.headers['csrf-token'];
+  const incomingToken = req.body?._csrf
+    || req.headers['x-csrf-token']
+    || req.headers['csrf-token']
+    || req.query?._csrf;
 
   if (!sessionToken || !incomingToken || incomingToken !== sessionToken) {
     return res.status(403).render('error', {

@@ -22,7 +22,7 @@ class TeacherModel {
   // Find teacher by teacher_id
   static async findById(teacherId) {
     return await getQuery(
-      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.is_active,
+      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture, u.is_active,
         d.department_name
        FROM teachers t
        JOIN users u ON t.user_id = u.user_id
@@ -35,7 +35,7 @@ class TeacherModel {
   // Find teacher by user_id (REQUIRED FOR LOGIN)
   static async findByUserId(userId) {
     return await getQuery(
-      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.is_active,
+      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture, u.is_active,
         d.department_name
        FROM teachers t
        JOIN users u ON t.user_id = u.user_id
@@ -48,7 +48,7 @@ class TeacherModel {
   // Get all teachers
   static async getAll() {
     return await allQuery(
-      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.is_active,
+      `SELECT t.*, u.first_name, u.last_name, u.email, u.phone, u.profile_picture, u.is_active,
         d.department_name
        FROM teachers t
        JOIN users u ON t.user_id = u.user_id

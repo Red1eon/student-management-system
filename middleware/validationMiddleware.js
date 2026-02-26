@@ -17,13 +17,46 @@ const validateClassCreate = [
   body('class_name').trim().notEmpty().withMessage('Class name is required'),
   body('class_code').trim().notEmpty().withMessage('Class code is required'),
   body('academic_year').trim().notEmpty().withMessage('Academic year is required'),
-  body('capacity').optional({ checkFalsy: true }).isInt({ min: 1, max: 500 }).withMessage('Capacity must be 1-500')
+  body('capacity').optional({ checkFalsy: true }).isInt({ min: 1, max: 500 }).withMessage('Capacity must be 1-500'),
+  body('course_id')
+    .optional({ checkFalsy: true })
+    .isInt({ min: 1 })
+    .withMessage('Invalid course'),
+  body('course_type')
+    .optional({ checkFalsy: true })
+    .isIn(['certificate', 'diploma', 'degree', 'short_course', 'other'])
+    .withMessage('Invalid course type'),
+  body('course_fee')
+    .optional({ checkFalsy: true })
+    .isFloat({ min: 0 })
+    .withMessage('Course fee must be a positive amount'),
+  body('fee_payment_plan')
+    .optional({ checkFalsy: true })
+    .isIn(['one_time', 'monthly', 'quarterly', 'yearly', 'installment', 'flexible'])
+    .withMessage('Invalid payment plan')
 ];
 
 const validateSubjectCreate = [
   body('subject_name').trim().notEmpty().withMessage('Subject name is required'),
   body('subject_code').trim().notEmpty().withMessage('Subject code is required'),
   body('credits').optional({ checkFalsy: true }).isInt({ min: 1, max: 20 }).withMessage('Credits must be 1-20')
+];
+
+const validateCourseCreate = [
+  body('course_name').trim().notEmpty().withMessage('Course name is required'),
+  body('course_code').trim().notEmpty().withMessage('Course code is required'),
+  body('course_type')
+    .optional({ checkFalsy: true })
+    .isIn(['certificate', 'diploma', 'degree', 'short_course', 'other'])
+    .withMessage('Invalid course type'),
+  body('fee_amount')
+    .optional({ checkFalsy: true })
+    .isFloat({ min: 0 })
+    .withMessage('Fee amount must be a positive amount'),
+  body('fee_payment_plan')
+    .optional({ checkFalsy: true })
+    .isIn(['one_time', 'monthly', 'quarterly', 'yearly', 'installment', 'flexible'])
+    .withMessage('Invalid payment plan')
 ];
 
 const validateLibraryIssue = [
@@ -49,6 +82,7 @@ module.exports = {
   validateStudentCreate,
   validateClassCreate,
   validateSubjectCreate,
+  validateCourseCreate,
   validateLibraryIssue,
   validateBookRequest,
   handleValidationErrors

@@ -1,6 +1,8 @@
-const TeacherModel = require('../models/TeacherModel');
+const TeacherModel = require('../models/teacherModel');
 const UserModel = require('../models/userModel');
 const DepartmentModel = require('../models/departmentModel');
+const ClassModel = require('../models/classModel');
+const SubjectModel = require('../models/subjectModel');
 
 const NONE_VALUES = new Set(['none', 'なし', 'n/a', 'na', 'null', '-']);
 
@@ -40,10 +42,20 @@ const teacherController = {
   getTeacherDetail: async (req, res) => {
     try {
       const teacher = await TeacherModel.findById(req.params.id);
-      if (!teacher) return res.status(404).render('404');
+      if (!teacher) return res.status(404).render('404', { title: 'Page Not Found' });
       
-      const subjects = await TeacherModel.getSubjects(req.params.id);
-      res.render('teachers/detail', { title: teacher.first_name + ' ' + teacher.last_name, teacher, subjects });
+      const [subjects, classes, allSubjects] = await Promise.all([
+        TeacherModel.getSubjects(req.params.id),
+        ClassModel.getAll(),
+        SubjectModel.getAll()
+      ]);
+      res.render('teachers/detail', {
+        title: teacher.first_name + ' ' + teacher.last_name,
+        teacher,
+        subjects,
+        classes,
+        allSubjects
+      });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
     }

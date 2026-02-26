@@ -1,4 +1,43 @@
-<div class="space-y-6 animate-fade-in">
-  <h2 class="text-2xl font-bold text-gray-800">Fees   Receipt</h2>
-  <p class="text-gray-500">This page is under construction. Content will be added soon.</p>
+<div class="max-w-3xl mx-auto space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Payment Receipt</h2>
+    <button onclick="window.print()" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900">
+      <i class="fas fa-print mr-2"></i> Print
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg p-6 space-y-5">
+    <div class="flex items-start justify-between border-b border-gray-200 pb-4">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">School Fee Receipt</h3>
+        <p class="text-sm text-gray-500">Receipt #: <span class="font-medium text-gray-700"><%= payment.receipt_number %></span></p>
+      </div>
+      <div class="text-right text-sm text-gray-600">
+        <p>Date: <%= payment.payment_date || '-' %></p>
+        <p>Status: <span class="capitalize"><%= payment.payment_status || 'completed' %></span></p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 text-sm">
+      <div>
+        <p class="text-gray-500">Student</p>
+        <p class="font-semibold text-gray-800"><%= payment.student_name %></p>
+        <p class="text-gray-600">Admission: <%= payment.admission_number %></p>
+      </div>
+      <div>
+        <p class="text-gray-500">Fee</p>
+        <p class="font-semibold text-gray-800"><%= payment.fee_name %></p>
+      </div>
+    </div>
+
+    <div class="border border-gray-200 rounded-lg overflow-hidden">
+      <div class="bg-gray-50 px-4 py-2 text-xs uppercase font-semibold text-gray-500">Payment Details</div>
+      <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+        <p><span class="text-gray-500">Amount:</span> <span class="font-semibold text-gray-800">$<%= Number(payment.amount_paid || 0).toFixed(2) %></span></p>
+        <p><span class="text-gray-500">Method:</span> <%= payment.payment_method || '-' %></p>
+        <p><span class="text-gray-500">Transaction ID:</span> <%= payment.transaction_id || '-' %></p>
+        <p><span class="text-gray-500">Remarks:</span> <%= payment.remarks || '-' %></p>
+      </div>
+    </div>
+  </div>
 </div>
