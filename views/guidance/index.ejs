@@ -1,6 +1,6 @@
 <div class="space-y-6 animate-fade-in">
   <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <h2 class="text-2xl font-bold text-gray-800">Guidance Records</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('guidance_records') %></h2>
   </div>
 
   <% if (query && query.success) { %>
@@ -14,35 +14,35 @@
   <% if (currentRole !== 'student') { %>
     <form method="GET" action="/guidance" class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
       <select name="class_id" class="border border-gray-300 rounded-lg px-3 py-2">
-        <option value="">All Classes</option>
+        <option value=""><%= __('all_classes') %></option>
         <% (classes || []).forEach((c) => { %>
           <option value="<%= c.class_id %>" <%= String(filters?.class_id || '') === String(c.class_id) ? 'selected' : '' %>><%= c.class_name %> <%= c.section || '' %></option>
         <% }) %>
       </select>
       <div></div>
-      <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900">Filter</button>
+      <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900"><%= __('filter') %></button>
     </form>
   <% } %>
 
   <% if (canCreate) { %>
     <form method="POST" action="/guidance" class="bg-white rounded-xl shadow-lg p-6 space-y-4">
-      <h3 class="font-semibold text-gray-800">Create Guidance Record</h3>
+      <h3 class="font-semibold text-gray-800"><%= __('create_guidance_record') %></h3>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm text-gray-700 mb-1">Student</label>
+          <label class="block text-sm text-gray-700 mb-1"><%= __('student') %></label>
           <select name="student_id" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
-            <option value="">Select student</option>
+            <option value=""><%= __('select_student') %></option>
             <% (students || []).forEach((s) => { %>
               <option value="<%= s.student_id %>"><%= s.first_name %> <%= s.last_name %> (<%= s.admission_number %>)</option>
             <% }) %>
           </select>
         </div>
         <div>
-          <label class="block text-sm text-gray-700 mb-1">Date</label>
+          <label class="block text-sm text-gray-700 mb-1"><%= __('date') %></label>
           <input type="date" name="guidance_date" value="<%= new Date().toISOString().slice(0, 10) %>" required class="w-full border border-gray-300 rounded-lg px-3 py-2">
         </div>
         <div>
-          <label class="block text-sm text-gray-700 mb-1">Category</label>
+          <label class="block text-sm text-gray-700 mb-1"><%= __('category') %></label>
           <select name="category" class="w-full border border-gray-300 rounded-lg px-3 py-2">
             <% ['academic','behavior','career','attendance','wellbeing','other'].forEach((category) => { %>
               <option value="<%= category %>"><%= category[0].toUpperCase() + category.slice(1) %></option>
@@ -51,16 +51,16 @@
         </div>
         <div></div>
         <div class="md:col-span-2">
-          <label class="block text-sm text-gray-700 mb-1">Notes</label>
+          <label class="block text-sm text-gray-700 mb-1"><%= __('notes') %></label>
           <textarea name="notes" rows="4" required class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
         </div>
         <div class="md:col-span-2">
-          <label class="block text-sm text-gray-700 mb-1">Follow-up Action</label>
+          <label class="block text-sm text-gray-700 mb-1"><%= __('follow_up_action') %></label>
           <textarea name="follow_up" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
         </div>
       </div>
       <div class="flex justify-end">
-        <button class="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700">Save Record</button>
+        <button class="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700"><%= __('save_record') %></button>
       </div>
     </form>
   <% } %>
@@ -69,11 +69,11 @@
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Notes</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Follow-up</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('date') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('student') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('category') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('notes') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('follow_up') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -91,7 +91,7 @@
             </tr>
           <% }) %>
         <% } else { %>
-          <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500">No guidance records found</td></tr>
+          <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500"><%= __('no_guidance_records_found') %></td></tr>
         <% } %>
       </tbody>
     </table>

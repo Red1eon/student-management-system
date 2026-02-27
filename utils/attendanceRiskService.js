@@ -116,5 +116,11 @@ async function evaluateAttendanceRisks({ classId = null, threshold = 75, notify 
   return alerts;
 }
 
-module.exports = { evaluateAttendanceRisks };
+module.exports = { 
+  evaluateAttendanceRisks,
+  classifyRisk,
+  alreadyLoggedToday,
+  logToday,
+  createGuidanceFollowup
+};
 

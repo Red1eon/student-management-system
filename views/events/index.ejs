@@ -1,13 +1,13 @@
 <div class="space-y-6 animate-fade-in">
   <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <h2 class="text-2xl font-bold text-gray-800">Events</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('events') %></h2>
     <div class="flex gap-2">
       <a href="/events/calendar" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-200">
-        <i class="fas fa-calendar-alt mr-2"></i> Calendar
+        <i class="fas fa-calendar-alt mr-2"></i> <%= __('calendar') %>
       </a>
       <% if (canManageEvents) { %>
         <a href="/events/create" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          <i class="fas fa-plus mr-2"></i> Create Event
+          <i class="fas fa-plus mr-2"></i> <%= __('create_event') %>
         </a>
       <% } %>
     </div>
@@ -15,13 +15,13 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     <div class="bg-white rounded-xl shadow p-4 border-l-4 <%= schoolStatus.today.isSchoolOpen ? 'border-green-500' : 'border-red-500' %>">
-      <p class="text-xs text-gray-500 uppercase tracking-wide">Japan School Status Today</p>
+      <p class="text-xs text-gray-500 uppercase tracking-wide"><%= __('japan_school_status_today') %></p>
       <p class="text-lg font-semibold text-gray-800"><%= schoolStatus.today.label %></p>
       <p class="text-sm text-gray-500"><%= schoolStatus.today.date %></p>
     </div>
     <div class="bg-white rounded-xl shadow p-4 border-l-4 <%= schoolStatus.tomorrow.isSchoolOpen ? 'border-green-500' : 'border-red-500' %>">
-      <p class="text-xs text-gray-500 uppercase tracking-wide">Tomorrow (Japan)</p>
-      <p class="text-lg font-semibold text-gray-800"><%= schoolStatus.tomorrow.isSchoolOpen ? 'School Open Tomorrow' : 'Holiday / Closed Tomorrow' %></p>
+      <p class="text-xs text-gray-500 uppercase tracking-wide"><%= __('tomorrow_japan') %></p>
+      <p class="text-lg font-semibold text-gray-800"><%= schoolStatus.tomorrow.isSchoolOpen ? __('school_open_tomorrow') : __('holiday_closed_tomorrow') %></p>
       <p class="text-sm text-gray-500"><%= schoolStatus.tomorrow.date %> - <%= schoolStatus.tomorrow.label %></p>
     </div>
   </div>
@@ -30,11 +30,11 @@
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dates</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('event') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('type') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('dates') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('location') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('actions') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -43,22 +43,22 @@
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4">
                 <div class="font-medium text-gray-900"><%= event.event_name %></div>
-                <div class="text-xs text-gray-500"><%= event.organizer_name || 'Unknown Organizer' %></div>
+                <div class="text-xs text-gray-500"><%= event.organizer_name || __('unknown_organizer') %></div>
               </td>
               <td class="px-6 py-4 text-sm text-gray-600 capitalize"><%= event.event_type || 'general' %></td>
               <td class="px-6 py-4 text-sm text-gray-600">
-                <div><%= event.start_date || 'N/A' %></div>
-                <div class="text-xs text-gray-500">to <%= event.end_date || 'N/A' %></div>
+                <div><%= event.start_date || __('na') %></div>
+                <div class="text-xs text-gray-500"><%= __('to') %> <%= event.end_date || __('na') %></div>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-600"><%= event.location || 'TBD' %></td>
+              <td class="px-6 py-4 text-sm text-gray-600"><%= event.location || __('tba') %></td>
               <td class="px-6 py-4 text-sm">
-                <a href="/events/<%= event.event_id %>" class="text-blue-600 hover:text-blue-800">View</a>
+                <a href="/events/<%= event.event_id %>" class="text-blue-600 hover:text-blue-800"><%= __('view') %></a>
               </td>
             </tr>
           <% }) %>
         <% } else { %>
           <tr>
-            <td colspan="5" class="px-6 py-8 text-center text-gray-500">No events found</td>
+            <td colspan="5" class="px-6 py-8 text-center text-gray-500"><%= __('no_events_found') %></td>
           </tr>
         <% } %>
       </tbody>

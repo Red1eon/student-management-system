@@ -1,13 +1,13 @@
 <div class="space-y-6 animate-fade-in">
   <div class="flex justify-between items-center">
-    <h2 class="text-2xl font-bold text-gray-800">Courses</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('courses') %></h2>
     <% if (role === 'admin') { %>
       <div class="flex items-center gap-3">
         <a href="/fees/add?fee_type=tuition&frequency=one-time&return_to=/courses" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-          <i class="fas fa-money-bill-wave mr-2"></i> Add Global Fee
+          <i class="fas fa-money-bill-wave mr-2"></i> <%= __('add_global_fee') %>
         </a>
         <a href="/courses/add" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-          <i class="fas fa-plus mr-2"></i> Add Course
+          <i class="fas fa-plus mr-2"></i> <%= __('add_course') %>
         </a>
       </div>
     <% } %>
@@ -17,20 +17,20 @@
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Course</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">How Paid</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('course') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('type') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('fee') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('how_paid') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('status_label') %></th>
           <% if (role === 'admin') { %>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('actions') %></th>
           <% } %>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
         <% if (!Array.isArray(courses) || courses.length === 0) { %>
           <tr>
-            <td colspan="<%= role === 'admin' ? 6 : 5 %>" class="px-6 py-8 text-center text-gray-500">No courses found</td>
+            <td colspan="<%= role === 'admin' ? 6 : 5 %>" class="px-6 py-8 text-center text-gray-500"><%= __('no_courses_found') %></td>
           </tr>
         <% } else { %>
           <% courses.forEach((course) => { %>
@@ -53,9 +53,9 @@
               <% if (role === 'admin') { %>
                 <td class="px-6 py-4 text-sm">
                   <div class="flex items-center gap-3">
-                    <a href="/courses/<%= course.course_id %>/edit" class="text-blue-600 hover:underline">Edit</a>
+                    <a href="/courses/<%= course.course_id %>/edit" class="text-blue-600 hover:underline"><%= __('edit') %></a>
                     <form action="/courses/<%= course.course_id %>?_method=DELETE" method="POST" onsubmit="return confirm('Delete this course?')">
-                      <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                      <button type="submit" class="text-red-600 hover:underline"><%= __('delete') %></button>
                     </form>
                   </div>
                 </td>

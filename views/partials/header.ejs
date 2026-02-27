@@ -10,6 +10,11 @@
     </div>
 
     <div class="flex items-center space-x-2 md:space-x-4">
+        <button id="themeToggleBtn" type="button" class="flex items-center gap-2 p-2 rounded-lg text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition-colors" aria-label="Toggle theme">
+            <i id="themeToggleIcon" class="fas fa-moon text-lg"></i>
+            <span id="themeToggleLabel" class="hidden sm:inline text-sm">Dark</span>
+        </button>
+
         <div class="hidden lg:flex items-center gap-2 text-sm">
             <span class="text-gray-500"><%= __('language') %>:</span>
             <a href="<%= currentPath %>?lang=en" class="<%= locale === 'en' ? 'font-semibold text-blue-600' : 'text-gray-600 hover:text-blue-600' %>"><%= __('english') %></a>

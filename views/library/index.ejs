@@ -1,29 +1,29 @@
 <div class="space-y-6 animate-fade-in">
-    <h2 class="text-2xl font-bold text-gray-800">Library</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('library') %></h2>
     <% const canManageLibrary = ['admin', 'teacher', 'staff', 'librarian'].includes(user.userType); %>
     
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="bg-white rounded-xl shadow-lg p-6 text-center">
             <i class="fas fa-book text-4xl text-blue-600 mb-4"></i>
-            <h3 class="font-bold">Books</h3>
-            <a href="/library/books" class="text-blue-600 hover:underline">View All</a>
+            <h3 class="font-bold"><%= __('books') %></h3>
+            <a href="/library/books" class="text-blue-600 hover:underline"><%= __('view_all') %></a>
         </div>
         <% if (canManageLibrary) { %>
             <div class="bg-white rounded-xl shadow-lg p-6 text-center">
                 <i class="fas fa-hand-holding text-4xl text-purple-600 mb-4"></i>
-                <h3 class="font-bold">Issue Book</h3>
-                <a href="/library/issue" class="text-purple-600 hover:underline">Issue Now</a>
+                <h3 class="font-bold"><%= __('issue_book') %></h3>
+                <a href="/library/issue" class="text-purple-600 hover:underline"><%= __('issue_now') %></a>
             </div>
             <div class="bg-white rounded-xl shadow-lg p-6 text-center">
                 <i class="fas fa-inbox text-4xl text-green-600 mb-4"></i>
-                <h3 class="font-bold">Requests</h3>
-                <a href="/library/requests" class="text-green-600 hover:underline">Manage Requests</a>
+                <h3 class="font-bold"><%= __('requests') %></h3>
+                <a href="/library/requests" class="text-green-600 hover:underline"><%= __('manage_requests') %></a>
             </div>
         <% } else { %>
             <div class="bg-white rounded-xl shadow-lg p-6 text-center md:col-span-2">
                 <i class="fas fa-book-reader text-4xl text-purple-600 mb-4"></i>
-                <h3 class="font-bold">My Borrowing</h3>
-                <a href="/library/my-books" class="text-purple-600 hover:underline">View My Books & Requests</a>
+                <h3 class="font-bold"><%= __('my_borrowing') %></h3>
+                <a href="/library/my-books" class="text-purple-600 hover:underline"><%= __('view_my_books_requests') %></a>
             </div>
         <% } %>
     </div>

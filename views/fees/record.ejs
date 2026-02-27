@@ -1,6 +1,6 @@
 <div class="max-w-2xl mx-auto animate-fade-in">
     <div class="bg-white rounded-xl shadow-lg p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6"><%= isEdit ? 'Update Fee Payment' : 'Record Fee Payment' %></h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-6"><%= isEdit ? __('update_fee_payment') : __('record_fee_payment') %></h2>
 
         <% if (locals.error) { %>
             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -10,9 +10,9 @@
 
         <form action="<%= isEdit ? ('/fees/payment/' + payment.payment_id + '/edit') : '/fees/record' %>" method="POST" class="space-y-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Student *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('student') %> *</label>
                 <select id="student_id" name="student_id" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
-                    <option value="">Select Student</option>
+                    <option value=""><%= __('select_student') %></option>
                     <% students.forEach(s => { %>
                         <option value="<%= s.student_id %>" <%= String(payment?.student_id || '') === String(s.student_id) ? 'selected' : '' %>><%= s.first_name %> <%= s.last_name %> (<%= s.admission_number %>)</option>
                     <% }) %>
@@ -20,32 +20,32 @@
             </div>
 
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <p class="text-xs text-blue-800 font-medium">Payment Plan</p>
-                <p id="payment_plan_text" class="text-sm text-blue-900">Select a student to view plan and fee structure.</p>
+                <p class="text-xs text-blue-800 font-medium"><%= __('payment_plan') %></p>
+                <p id="payment_plan_text" class="text-sm text-blue-900"><%= __('select_student_first') %></p>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Fee Structure Item *</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('fee_structure') %> *</label>
                 <select id="fee_id" name="fee_id" required data-selected="<%= payment?.fee_id || '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
-                    <option value="">Select Student First</option>
+                    <option value=""><%= __('select_student_first') %></option>
                 </select>
-                <p id="fee_select_hint" class="text-xs text-gray-500 mt-1">Pick a fee item to apply payment.</p>
+                <p id="fee_select_hint" class="text-xs text-gray-500 mt-1"><%= __('pick_fee_item') %></p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount Paid *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('amount_paid') %> *</label>
                     <input type="number" step="0.01" name="amount_paid" required value="<%= payment?.amount_paid || '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('payment_date') %> *</label>
                     <input type="date" name="payment_date" required value="<%= payment?.payment_date || new Date().toISOString().split('T')[0] %>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('payment_method') %> *</label>
                     <select id="payment_method" name="payment_method" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
                         <option value="cash" <%= (payment?.payment_method || 'cash') === 'cash' ? 'selected' : '' %>>Cash</option>
                         <option value="card" <%= payment?.payment_method === 'card' ? 'selected' : '' %>>Card</option>
@@ -54,19 +54,19 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Transaction ID</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('transaction_id') %></label>
                     <input id="transaction_id" type="text" name="transaction_id" value="<%= payment?.transaction_id || '' %>" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1"><%= __('remarks') %></label>
                 <textarea name="remarks" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"><%= payment?.remarks || '' %></textarea>
             </div>
 
             <div class="flex justify-end space-x-3">
-                <a href="/fees" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</a>
-                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"><%= isEdit ? 'Update Payment' : 'Record Payment' %></button>
+                <a href="/fees" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"><%= __('cancel') %></a>
+                <button type="submit" class="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"><%= isEdit ? __('update_fee_payment') : __('record_fee_payment') %></button>
             </div>
         </form>
     </div>
@@ -93,14 +93,18 @@
             const placeholder = document.createElement('option');
             placeholder.value = '';
             placeholder.textContent = hasSelectableFee
-                ? 'Select Fee Item'
-                : (fees.length ? 'Plan-based structure (Auto assign on save)' : (isFlexible ? 'Flexible Payment (No fixed item required)' : 'No Fee Structure Found'));
+                ? '<%= __('select_fee_item') %>'
+                : (fees.length
+                    ? '<%= __('auto_assign_on_save') %>'
+                    : (isFlexible
+                        ? '<%= __('general_flexible_payment') %>'
+                        : '<%= __('no_fee_structure') %>'));
             feeSelect.appendChild(placeholder);
 
             if (isFlexible) {
                 const flexibleOption = document.createElement('option');
                 flexibleOption.value = '';
-                flexibleOption.textContent = 'General Flexible Payment';
+                flexibleOption.textContent = '<%= __('general_flexible_payment') %>';
                 if (!selectedFeeId) flexibleOption.selected = true;
                 feeSelect.appendChild(flexibleOption);
             }
@@ -110,7 +114,7 @@
                 const numericFeeId = Number(fee.fee_id);
                 const validFeeId = Number.isInteger(numericFeeId) && numericFeeId > 0;
                 option.value = validFeeId ? String(fee.fee_id) : '';
-                option.textContent = `${fee.fee_name} - $${Number(fee.amount || 0).toFixed(2)}${fee.due_date ? ` (Due: ${fee.due_date})` : ''}`;
+                option.textContent = `${fee.fee_name} - $${Number(fee.amount || 0).toFixed(2)}${fee.due_date ? ` (<%= __('due_date') %>: ${fee.due_date})` : ''}`;
                 if (!validFeeId) option.disabled = true;
                 if (validFeeId && String(selectedFeeId || '') === String(fee.fee_id)) option.selected = true;
                 feeSelect.appendChild(option);
@@ -118,10 +122,10 @@
 
             feeSelect.required = !isFlexible && hasSelectableFee;
             feeSelectHint.textContent = isFlexible
-                ? 'Flexible plan: you can record payment without selecting a fixed fee line.'
+                ? '<%= __('flexible_payment_hint') %>'
                 : (hasSelectableFee
-                    ? 'Pick a fee item to apply payment.'
-                    : 'Course payment plan is shown. System will auto-map payment when you submit.');
+                    ? '<%= __('pick_fee_item') %>'
+                    : '<%= __('auto_assign_hint') %>');
         };
 
         const updateStudentFeeContext = async () => {
@@ -136,21 +140,21 @@
             try {
                 const response = await fetch(`/fees/record/options/${selectedStudentId}`);
                 const data = await response.json();
-                if (!response.ok) throw new Error(data?.error || 'Failed to load fee options');
+                if (!response.ok) throw new Error(data?.error || '<%= __('failed_load_fee_options') %>');
 
                 const planLabel = String(data.paymentPlan || 'one_time').replace('_', ' ');
                 const planDescription = data.paymentDescription ? ` - ${data.paymentDescription}` : '';
                 const allDueDates = Array.isArray(data.allDueDates) ? data.allDueDates : [];
                 const deadlineText = allDueDates.length
-                    ? ` | Deadlines: ${allDueDates.join(', ')}`
-                    : (data.nextDueDate ? ` | Next deadline: ${data.nextDueDate}` : '');
-                const overdueText = Number(data.overdueCount || 0) > 0 ? ` | Overdue: ${data.overdueCount}` : '';
-                const flexibleText = data.supportsFlexiblePayment ? ' | Flexible: any amount can be recorded' : '';
+                    ? ` | <%= __('deadlines') %>: ${allDueDates.join(', ')}`
+                    : (data.nextDueDate ? ` | <%= __('next_deadline') %>: ${data.nextDueDate}` : '');
+                const overdueText = Number(data.overdueCount || 0) > 0 ? ` | <%= __('overdue') %>: ${data.overdueCount}` : '';
+                const flexibleText = data.supportsFlexiblePayment ? ` | <%= __('flexible') %>: <%= __('any_amount') %>` : '';
                 paymentPlanText.textContent = `${planLabel.charAt(0).toUpperCase()}${planLabel.slice(1)}${planDescription}${deadlineText}${overdueText}${flexibleText}`;
                 renderFeeOptions(Array.isArray(data.fees) ? data.fees : [], selectedFeeId, Boolean(data.supportsFlexiblePayment));
                 feeSelect.dataset.selected = '';
             } catch (error) {
-                paymentPlanText.textContent = 'Unable to load student fee structure.';
+                paymentPlanText.textContent = '<%= __('unable_to_load_student_fee') %>';
                 renderFeeOptions([], '', false);
             }
         };

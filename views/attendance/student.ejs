@@ -1,39 +1,39 @@
 <div class="space-y-6 animate-fade-in">
   <a href="/students/<%= student.student_id %>" class="text-blue-600 hover:underline inline-block">
-    <i class="fas fa-arrow-left mr-2"></i> Back to Student
+    <i class="fas fa-arrow-left mr-2"></i> <%= __('back_to_student') %>
   </a>
 
   <div class="flex flex-col gap-1">
-    <h2 class="text-2xl font-bold text-gray-800"><%= student.first_name %> <%= student.last_name %> Attendance</h2>
-    <p class="text-sm text-gray-500"><%= student.admission_number %> | <%= student.class_name || 'N/A' %> <%= student.section || '' %></p>
+    <h2 class="text-2xl font-bold text-gray-800"><%= student.first_name %> <%= student.last_name %> <%= __('student_attendance') %></h2>
+    <p class="text-sm text-gray-500"><%= student.admission_number %> | <%= student.class_name || __('na') %> <%= student.section || '' %></p>
   </div>
 
   <form method="GET" action="/attendance/student/<%= student.student_id %>" class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
     <select name="scope" class="border border-gray-300 rounded-lg px-3 py-2">
-      <option value="month" <%= (scope || 'month') === 'month' ? 'selected' : '' %>>This Month</option>
-      <option value="overall" <%= (scope || 'month') === 'overall' ? 'selected' : '' %>>Overall</option>
+      <option value="month" <%= (scope || 'month') === 'month' ? 'selected' : '' %>><%= __('this_month') %></option>
+      <option value="overall" <%= (scope || 'month') === 'overall' ? 'selected' : '' %>><%= __('overall') %></option>
     </select>
-    <input type="number" min="1" max="12" name="month" value="<%= Number(month) %>" placeholder="Month" class="border border-gray-300 rounded-lg px-3 py-2">
-    <input type="number" min="2000" max="2100" name="year" value="<%= year %>" placeholder="Year" class="border border-gray-300 rounded-lg px-3 py-2">
-    <button class="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700">Apply</button>
+    <input type="number" min="1" max="12" name="month" value="<%= Number(month) %>" placeholder="<%= __('month') %>" class="border border-gray-300 rounded-lg px-3 py-2">
+    <input type="number" min="2000" max="2100" name="year" value="<%= year %>" placeholder="<%= __('year') %>" class="border border-gray-300 rounded-lg px-3 py-2">
+    <button class="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700"><%= __('apply') %></button>
   </form>
 
   <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-    <div class="bg-green-50 rounded-lg p-4"><p class="text-xs text-green-700">Present</p><p class="text-2xl font-bold text-green-800"><%= summary?.present || 0 %></p></div>
-    <div class="bg-red-50 rounded-lg p-4"><p class="text-xs text-red-700">Absent</p><p class="text-2xl font-bold text-red-800"><%= summary?.absent || 0 %></p></div>
-    <div class="bg-yellow-50 rounded-lg p-4"><p class="text-xs text-yellow-700">Late</p><p class="text-2xl font-bold text-yellow-800"><%= summary?.late || 0 %></p></div>
-    <div class="bg-blue-50 rounded-lg p-4"><p class="text-xs text-blue-700">Excused</p><p class="text-2xl font-bold text-blue-800"><%= summary?.excused || 0 %></p></div>
-    <div class="bg-gray-100 rounded-lg p-4"><p class="text-xs text-gray-700"><%= (scope || 'month') === 'overall' ? 'Overall Rate' : 'This Month Rate' %></p><p class="text-2xl font-bold text-gray-800"><%= summary?.attendance_rate || 0 %>%</p></div>
+    <div class="bg-green-50 rounded-lg p-4"><p class="text-xs text-green-700"><%= __('present') %></p><p class="text-2xl font-bold text-green-800"><%= summary?.present || 0 %></p></div>
+    <div class="bg-red-50 rounded-lg p-4"><p class="text-xs text-red-700"><%= __('absent') %></p><p class="text-2xl font-bold text-red-800"><%= summary?.absent || 0 %></p></div>
+    <div class="bg-yellow-50 rounded-lg p-4"><p class="text-xs text-yellow-700"><%= __('late') %></p><p class="text-2xl font-bold text-yellow-800"><%= summary?.late || 0 %></p></div>
+    <div class="bg-blue-50 rounded-lg p-4"><p class="text-xs text-blue-700"><%= __('excused') %></p><p class="text-2xl font-bold text-blue-800"><%= summary?.excused || 0 %></p></div>
+    <div class="bg-gray-100 rounded-lg p-4"><p class="text-xs text-gray-700"><%= (scope || 'month') === 'overall' ? __('overall_rate') : __('this_month_rate') %></p><p class="text-2xl font-bold text-gray-800"><%= summary?.attendance_rate || 0 %>%</p></div>
   </div>
 
   <div class="bg-white rounded-xl shadow-lg overflow-hidden">
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Correction</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('date') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('status_label') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('remarks') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('request_correction') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -41,25 +41,25 @@
           <% attendance.forEach((item) => { %>
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4 text-sm text-gray-700"><%= item.date %></td>
-              <td class="px-6 py-4 text-sm capitalize"><%= item.status %></td>
-              <td class="px-6 py-4 text-sm text-gray-600"><%= item.remarks || '-' %></td>
+              <td class="px-6 py-4 text-sm capitalize"><%= __(item.status) %></td>
+              <td class="px-6 py-4 text-gray-600"><%= item.remarks || '-' %></td>
               <td class="px-6 py-4 text-sm text-gray-700">
                 <form method="POST" action="/attendance/corrections/request" class="flex items-center gap-2">
                   <input type="hidden" name="attendance_id" value="<%= item.attendance_id %>">
                   <input type="hidden" name="student_id" value="<%= student.student_id %>">
                   <select name="requested_status" class="border border-gray-300 rounded px-2 py-1 text-xs">
                     <% ['present','absent','late','excused'].forEach((s) => { %>
-                      <option value="<%= s %>" <%= item.status === s ? 'selected' : '' %>><%= s %></option>
+                      <option value="<%= s %>" <%= item.status === s ? 'selected' : '' %>><%= __(s) %></option>
                     <% }) %>
                   </select>
-                  <input name="reason" placeholder="Reason" class="border border-gray-300 rounded px-2 py-1 text-xs">
-                  <button class="bg-yellow-600 text-white rounded px-2 py-1 text-xs">Request</button>
+                  <input name="reason" placeholder="<%= __('correction_reason') %>" class="border border-gray-300 rounded px-2 py-1 text-xs">
+                  <button class="bg-yellow-600 text-white rounded px-2 py-1 text-xs"><%= __('request') %></button>
                 </form>
               </td>
             </tr>
           <% }) %>
         <% } else { %>
-          <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500">No attendance records</td></tr>
+          <tr><td colspan="4" class="px-6 py-8 text-center text-gray-500"><%= __('no_attendance_records') %></td></tr>
         <% } %>
       </tbody>
     </table>

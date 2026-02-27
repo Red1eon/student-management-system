@@ -1,9 +1,18 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="<%= typeof locale !== 'undefined' ? locale : 'en' %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | School Management System</title>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+        })();
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +20,11 @@
 </head>
 <body class="gradient-bg min-h-screen flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade-in">
-        <div class="text-right mb-3 text-sm">
+        <div class="flex justify-between items-center mb-3 text-sm">
+            <button id="themeToggleBtn" type="button" class="flex items-center gap-2 text-gray-600 hover:text-blue-600">
+                <i id="themeToggleIcon" class="fas fa-moon"></i>
+                <span id="themeToggleLabel">Dark</span>
+            </button>
             <a href="/auth/login?lang=en" class="text-gray-600 hover:text-blue-600">EN</a>
             <span class="text-gray-300 mx-1">|</span>
             <a href="/auth/login?lang=ja" class="text-gray-600 hover:text-blue-600"><%= __('japanese') %></a>
@@ -54,8 +67,33 @@
         </form>
         
         <div class="mt-6 text-center text-sm text-gray-500">
-            <p><%= locale === 'ja' ? '管理者から配布された認証情報を使用してください' : 'Use credentials assigned by your administrator' %></p>
+            <p>Use credentials assigned by your administrator</p>
         </div>
     </div>
+    <script>
+        (function () {
+            const button = document.getElementById('themeToggleBtn');
+            const icon = document.getElementById('themeToggleIcon');
+            const label = document.getElementById('themeToggleLabel');
+            if (!button) return;
+
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+                localStorage.setItem('theme', theme);
+                if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+                if (label) {
+                    label.textContent = theme === 'dark' ? 'Light' : 'Dark';
+                }
+            };
+
+            applyTheme(document.documentElement.getAttribute('data-theme') || 'light');
+            button.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme') || 'light';
+                applyTheme(current === 'dark' ? 'light' : 'dark');
+            });
+        })();
+    </script>
 </body>
 </html>
+

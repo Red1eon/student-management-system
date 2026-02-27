@@ -143,16 +143,31 @@ class FeeModel {
       params.push(context.academic_year);
     }
 
-    sql += ' ORDER BY f.due_date IS NULL, f.due_date ASC, f.created_at ASC';
-    const fees = await allQuery(sql, params);
-    if (Array.isArray(fees) && fees.length > 0) {
-      return fees.map((fee) => ({
-        ...fee,
-        payment_plan: context.fee_payment_plan || 'one_time'
-      }));
+    // Handle potential missing created_at column
+    try {
+      sql += ' ORDER BY f.due_date IS NULL, f.due_date ASC, f.created_at ASC';
+      const fees = await allQuery(sql, params);
+      if (Array.isArray(fees) && fees.length > 0) {
+        return fees.map((fee) => ({
+          ...fee,
+          payment_plan: context.fee_payment_plan || 'one_time'
+        }));
+      }
+      return this.buildPlannedFeeRows(context);
+    } catch (error) {
+      if (String(error.message || '').includes('no such column: f.created_at')) {
+        sql += ' ORDER BY f.due_date IS NULL, f.due_date ASC';
+        const fees = await allQuery(sql, params);
+        if (Array.isArray(fees) && fees.length > 0) {
+          return fees.map((fee) => ({
+            ...fee,
+            payment_plan: context.fee_payment_plan || 'one_time'
+          }));
+        }
+        return this.buildPlannedFeeRows(context);
+      }
+      throw error;
     }
-
-    return this.buildPlannedFeeRows(context);
   }
 
   static async update(feeId, updateData) {
@@ -207,17 +222,34 @@ class FeeModel {
       feeParams.push(studentContext.academic_year);
     }
 
-    feeSql += ' ORDER BY due_date IS NULL, due_date ASC, created_at ASC';
-    let fees = await allQuery(feeSql, feeParams);
-    if (!fees || fees.length === 0) {
-      fees = this.buildPlannedFeeRows(studentContext);
+    // Handle potential missing created_at column
+    try {
+      feeSql += ' ORDER BY due_date IS NULL, due_date ASC, created_at ASC';
+      let fees = await allQuery(feeSql, feeParams);
+      if (!fees || fees.length === 0) {
+        fees = this.buildPlannedFeeRows(studentContext);
+      }
+      return {
+        paymentPlan: studentContext.fee_payment_plan || 'one_time',
+        paymentDescription: studentContext.fee_payment_description || '',
+        fees
+      };
+    } catch (error) {
+      // Fallback if created_at column doesn't exist
+      if (String(error.message || '').includes('no such column: created_at')) {
+        feeSql += ' ORDER BY due_date IS NULL, due_date ASC';
+        let fees = await allQuery(feeSql, feeParams);
+        if (!fees || fees.length === 0) {
+          fees = this.buildPlannedFeeRows(studentContext);
+        }
+        return {
+          paymentPlan: studentContext.fee_payment_plan || 'one_time',
+          paymentDescription: studentContext.fee_payment_description || '',
+          fees
+        };
+      }
+      throw error;
     }
-
-    return {
-      paymentPlan: studentContext.fee_payment_plan || 'one_time',
-      paymentDescription: studentContext.fee_payment_description || '',
-      fees
-    };
   }
 }
 

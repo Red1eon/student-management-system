@@ -1,6 +1,6 @@
 <div class="space-y-6 animate-fade-in">
   <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-    <h2 class="text-2xl font-bold text-gray-800">Fee Structure</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('fee_structure') %></h2>
     <a href="/fees/add" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
       <i class="fas fa-plus mr-2"></i> Add Fee
     </a>
@@ -8,27 +8,27 @@
 
   <form method="GET" action="/fees/structure" class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
     <select name="class_id" class="border border-gray-300 rounded-lg px-3 py-2">
-      <option value="">All Classes</option>
+      <option value=""><%= __('all_classes') %></option>
       <% (classes || []).forEach((c) => { %>
         <option value="<%= c.class_id %>" <%= String(filters?.class_id || '') === String(c.class_id) ? 'selected' : '' %>><%= c.class_name %> <%= c.section || '' %></option>
       <% }) %>
     </select>
     <input name="academic_year" value="<%= filters?.academic_year || '' %>" placeholder="Academic Year" class="border border-gray-300 rounded-lg px-3 py-2">
-    <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900">Filter</button>
+    <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900"><%= __('filter') %></button>
   </form>
 
   <div class="bg-white rounded-xl shadow-lg overflow-hidden">
     <table class="w-full">
       <thead class="bg-gray-50">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fee Name</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Class</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Year</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modified</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('fee_name') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('class') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('amount') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('frequency') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('due_date') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('year') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('modified') %></th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= __('actions') %></th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200">
@@ -50,12 +50,12 @@
               <td class="px-6 py-4 text-sm text-gray-600"><%= fee.academic_year || '-' %></td>
               <td class="px-6 py-4 text-sm text-gray-600"><%= fee.updated_at || fee.created_at || '-' %></td>
               <td class="px-6 py-4 text-sm">
-                <a href="/fees/structure/<%= fee.fee_id %>/edit" class="text-blue-600 hover:text-blue-800">Edit</a>
+                <a href="/fees/structure/<%= fee.fee_id %>/edit" class="text-blue-600 hover:text-blue-800"><%= __('edit') %></a>
               </td>
             </tr>
           <% }) %>
         <% } else { %>
-          <tr><td colspan="8" class="px-6 py-8 text-center text-gray-500">No fee structures found</td></tr>
+          <tr><td colspan="8" class="px-6 py-8 text-center text-gray-500"><%= __('no_fee_structures_found') %></td></tr>
         <% } %>
       </tbody>
     </table>

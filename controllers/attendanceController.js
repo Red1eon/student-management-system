@@ -410,6 +410,76 @@ const attendanceController = {
         dayPeriodRecords = periodRecords;
       }
 
+      // Ensure attendance is recorded for every student in class (current + future),
+      // defaulting unmarked entries to "present".
+      const classStudents = await StudentModel.getAll({ class_id: classIdNum });
+      const classStudentIds = classStudents
+        .map((s) => Number.parseInt(s.student_id, 10))
+        .filter((id) => Number.isInteger(id) && id > 0);
+
+      if (mode === 'month') {
+        // Only save dates that were explicitly marked in the UI.
+        // This prevents a single-day edit from auto-saving the whole month.
+        const selectedDates = new Set(
+          records
+            .filter((r) => VALID_STATUSES.has(String(r.status || '').toLowerCase()))
+            .map((r) => String(r.date))
+        );
+        const dates = Array.from(selectedDates);
+        const byStudentDate = new Map();
+
+        records = records.map((r) => {
+          const normalized = String(r.status || '').toLowerCase();
+          if (!selectedDates.has(String(r.date))) {
+            return { ...r, status: '' };
+          }
+          const status = VALID_STATUSES.has(normalized) ? normalized : 'present';
+          const key = `${Number.parseInt(r.student_id, 10)}:${r.date}`;
+          byStudentDate.set(key, true);
+          return { ...r, status };
+        });
+
+        if (dates.length === 0) {
+          return res.redirect(`/attendance/mark?mode=month&class_id=${classIdNum}&month=${month}&error=Select at least one day with attendance before saving`);
+        }
+
+        classStudentIds.forEach((studentId) => {
+          dates.forEach((d) => {
+            const key = `${studentId}:${d}`;
+            if (byStudentDate.has(key)) return;
+            records.push({
+              student_id: studentId,
+              class_id: classIdNum,
+              date: d,
+              status: 'present',
+              remarks: '',
+              marked_by: marker
+            });
+          });
+        });
+      } else {
+        const byStudent = new Set();
+        records = records.map((r) => {
+          const normalized = String(r.status || '').toLowerCase();
+          const status = VALID_STATUSES.has(normalized) ? normalized : 'present';
+          const studentId = Number.parseInt(r.student_id, 10);
+          if (Number.isInteger(studentId) && studentId > 0) byStudent.add(studentId);
+          return { ...r, status };
+        });
+
+        classStudentIds.forEach((studentId) => {
+          if (byStudent.has(studentId)) return;
+          records.push({
+            student_id: studentId,
+            class_id: classIdNum,
+            date: effectiveDate,
+            status: 'present',
+            remarks: '',
+            marked_by: marker
+          });
+        });
+      }
+
       records = records.filter((r) => r.student_id && r.class_id && r.date && r.status);
       const invalid = records.find((r) => !VALID_STATUSES.has(String(r.status).toLowerCase()));
       if (invalid) {

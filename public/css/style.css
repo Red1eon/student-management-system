@@ -87,3 +87,90 @@
 .gradient-bg {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
+
+/* Theme variables */
+:root {
+    --app-bg: #f9fafb;
+    --app-text: #1f2937;
+    --card-bg: #ffffff;
+    --muted-text: #6b7280;
+    --border-color: #e5e7eb;
+    --hover-bg: #f3f4f6;
+    --scroll-track: #f1f1f1;
+    --scroll-thumb: #888888;
+    --scroll-thumb-hover: #555555;
+}
+
+html[data-theme='dark'] {
+    --app-bg: #0b1220;
+    --app-text: #e5e7eb;
+    --card-bg: #111827;
+    --muted-text: #9ca3af;
+    --border-color: #374151;
+    --hover-bg: #1f2937;
+    --scroll-track: #111827;
+    --scroll-thumb: #4b5563;
+    --scroll-thumb-hover: #6b7280;
+}
+
+body {
+    background: var(--app-bg);
+    color: var(--app-text);
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scroll-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scroll-thumb-hover);
+}
+
+/* Dark mode mappings for common Tailwind classes in templates */
+html[data-theme='dark'] .bg-gray-50,
+html[data-theme='dark'] .bg-gray-100 {
+    background-color: #0b1220 !important;
+}
+
+html[data-theme='dark'] .bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+html[data-theme='dark'] .text-gray-800,
+html[data-theme='dark'] .text-gray-900,
+html[data-theme='dark'] .text-black {
+    color: #e5e7eb !important;
+}
+
+html[data-theme='dark'] .text-gray-700,
+html[data-theme='dark'] .text-gray-600,
+html[data-theme='dark'] .text-gray-500,
+html[data-theme='dark'] .text-gray-400,
+html[data-theme='dark'] .text-gray-300 {
+    color: #9ca3af !important;
+}
+
+html[data-theme='dark'] .border-gray-100,
+html[data-theme='dark'] .border-gray-200,
+html[data-theme='dark'] .border-gray-300 {
+    border-color: var(--border-color) !important;
+}
+
+html[data-theme='dark'] .hover\:bg-gray-50:hover,
+html[data-theme='dark'] .hover\:bg-gray-100:hover,
+html[data-theme='dark'] .hover\:bg-gray-200:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+html[data-theme='dark'] .shadow,
+html[data-theme='dark'] .shadow-sm,
+html[data-theme='dark'] .shadow-md,
+html[data-theme='dark'] .shadow-lg,
+html[data-theme='dark'] .shadow-xl,
+html[data-theme='dark'] .shadow-2xl {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35) !important;
+}

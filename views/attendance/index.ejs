@@ -1,5 +1,5 @@
 <div class="space-y-6 animate-fade-in">
-    <h2 class="text-2xl font-bold text-gray-800">Attendance</h2>
+    <h2 class="text-2xl font-bold text-gray-800"><%= __('attendance') %></h2>
     <% if (query && query.success) { %>
       <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-700"><%= query.success %></div>
     <% } %>
@@ -8,60 +8,60 @@
     <% } %>
     
     <div class="bg-white rounded-xl shadow-lg p-6">
-      <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+      <h3 class="text-lg font-semibold mb-4"><%= __('quick_actions') %></h3>
       <div class="flex space-x-4">
             <a href="/attendance/mark?mode=day" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                <i class="fas fa-clipboard-check mr-2"></i> Mark Attendance
+                <i class="fas fa-clipboard-check mr-2"></i> <%= __('mark_attendance') %>
             </a>
             <a href="/attendance/period" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                <i class="fas fa-layer-group mr-2"></i> Period Attendance
+                <i class="fas fa-layer-group mr-2"></i> <%= __('period_attendance') %>
             </a>
             <a href="/attendance/report" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                <i class="fas fa-chart-bar mr-2"></i> View Report
+                <i class="fas fa-chart-bar mr-2"></i> <%= __('view_report') %>
             </a>
             <a href="/attendance/corrections" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
-                <i class="fas fa-pen mr-2"></i> Corrections
+                <i class="fas fa-pen mr-2"></i> <%= __('attendance_corrections') %>
             </a>
         </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div class="bg-white rounded-xl shadow p-4">
-        <p class="text-xs uppercase text-gray-500">Total Alerts</p>
+        <p class="text-xs uppercase text-gray-500"><%= __('total_alerts') %></p>
         <p class="text-2xl font-bold text-gray-800"><%= analytics?.total || 0 %></p>
       </div>
       <div class="bg-white rounded-xl shadow p-4">
-        <p class="text-xs uppercase text-blue-600">Notice</p>
+        <p class="text-xs uppercase text-blue-600"><%= __('notice') %></p>
         <p class="text-2xl font-bold text-blue-700"><%= analytics?.notice || 0 %></p>
       </div>
       <div class="bg-white rounded-xl shadow p-4">
-        <p class="text-xs uppercase text-yellow-600">Warning</p>
+        <p class="text-xs uppercase text-yellow-600"><%= __('warning') %></p>
         <p class="text-2xl font-bold text-yellow-700"><%= analytics?.warning || 0 %></p>
       </div>
       <div class="bg-white rounded-xl shadow p-4">
-        <p class="text-xs uppercase text-red-600">Danger</p>
+        <p class="text-xs uppercase text-red-600"><%= __('danger') %></p>
         <p class="text-2xl font-bold text-red-700"><%= analytics?.danger || 0 %></p>
       </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-lg p-6">
-      <h3 class="text-lg font-semibold mb-4">Early Risk Follow-up</h3>
+      <h3 class="text-lg font-semibold mb-4"><%= __('early_risk_follow_up') %></h3>
       <form method="GET" action="/attendance" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
         <select name="class_id" class="border border-gray-300 rounded-lg px-3 py-2">
-          <option value="">Select Class</option>
+          <option value=""><%= __('select_class') %></option>
           <% (classes || []).forEach((c) => { %>
             <option value="<%= c.class_id %>" <%= String(filters?.class_id || '') === String(c.class_id) ? 'selected' : '' %>><%= c.class_name %> <%= c.section || '' %></option>
           <% }) %>
         </select>
-        <input type="number" name="threshold" min="1" max="100" value="<%= filters?.threshold || 75 %>" class="border border-gray-300 rounded-lg px-3 py-2" placeholder="Min attendance %">
-        <input type="number" name="consecutive" min="1" value="<%= filters?.consecutive || 3 %>" class="border border-gray-300 rounded-lg px-3 py-2" placeholder="Consecutive absences">
-        <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900">Check Alerts</button>
+        <input type="number" name="threshold" min="1" max="100" value="<%= filters?.threshold || 75 %>" class="border border-gray-300 rounded-lg px-3 py-2" placeholder="<%= __('min_attendance_percent') %>">
+        <input type="number" name="consecutive" min="1" value="<%= filters?.consecutive || 3 %>" class="border border-gray-300 rounded-lg px-3 py-2" placeholder="<%= __('consecutive_absences') %>">
+        <button class="bg-gray-800 text-white rounded-lg px-4 py-2 hover:bg-gray-900"><%= __('check_alerts') %></button>
       </form>
       <form method="POST" action="/attendance/run-risk-check" class="mb-4 flex gap-2">
         <input type="hidden" name="class_id" value="<%= filters?.class_id || '' %>">
         <input type="hidden" name="threshold" value="<%= filters?.threshold || 75 %>">
         <button class="bg-red-600 text-white rounded-lg px-4 py-2 hover:bg-red-700">
-          <i class="fas fa-bolt mr-2"></i> Run Risk Check + Notify
+          <i class="fas fa-bolt mr-2"></i> <%= __('run_risk_check_notify') %>
         </button>
       </form>
 
@@ -69,20 +69,20 @@
         <% const noticeCount = (alerts || []).filter((a) => a.level === 'notice').length; %>
         <% const warningCount = (alerts || []).filter((a) => a.level === 'warning').length; %>
         <% const dangerCount = (alerts || []).filter((a) => a.level === 'danger').length; %>
-        <div class="rounded-lg p-3 bg-blue-50 border border-blue-100"><p class="text-xs text-blue-700 uppercase">Notice</p><p class="text-2xl font-bold text-blue-800"><%= noticeCount %></p></div>
-        <div class="rounded-lg p-3 bg-yellow-50 border border-yellow-100"><p class="text-xs text-yellow-700 uppercase">Warning</p><p class="text-2xl font-bold text-yellow-800"><%= warningCount %></p></div>
-        <div class="rounded-lg p-3 bg-red-50 border border-red-100"><p class="text-xs text-red-700 uppercase">Danger</p><p class="text-2xl font-bold text-red-800"><%= dangerCount %></p></div>
+        <div class="rounded-lg p-3 bg-blue-50 border border-blue-100"><p class="text-xs text-blue-700 uppercase"><%= __('notice') %></p><p class="text-2xl font-bold text-blue-800"><%= noticeCount %></p></div>
+        <div class="rounded-lg p-3 bg-yellow-50 border border-yellow-100"><p class="text-xs text-yellow-700 uppercase"><%= __('warning') %></p><p class="text-2xl font-bold text-yellow-800"><%= warningCount %></p></div>
+        <div class="rounded-lg p-3 bg-red-50 border border-red-100"><p class="text-xs text-red-700 uppercase"><%= __('danger') %></p><p class="text-2xl font-bold text-red-800"><%= dangerCount %></p></div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Level</th>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Attendance Rate</th>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Current Consecutive Absences</th>
-              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= __('student') %></th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= __('level') %></th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= __('attendance_rate') %></th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= __('current_consecutive_absences') %></th>
+              <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"><%= __('reason') %></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200">
@@ -99,7 +99,7 @@
                 </tr>
               <% }) %>
             <% } else { %>
-              <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">No active alerts</td></tr>
+              <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500"><%= __('no_active_alerts') %></td></tr>
             <% } %>
           </tbody>
         </table>
@@ -108,24 +108,24 @@
 
     <div class="bg-white rounded-xl shadow-lg p-6">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold">Data Integrity Check</h3>
-        <a href="/attendance/integrity" class="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800">Run Integrity Check</a>
+        <h3 class="text-lg font-semibold"><%= __('data_integrity_check') %></h3>
+        <a href="/attendance/integrity" class="bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-800"><%= __('run_integrity_check') %></a>
       </div>
       <% if (integrity) { %>
         <div class="mb-3 text-sm">
-          <span class="font-semibold">Total Issues:</span> <%= integrity.totalIssues %>
+          <span class="font-semibold"><%= __('total_issues') %>:</span> <%= integrity.totalIssues %>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 class="font-medium mb-2 text-sm">Invalid Attendance Status</h4>
+            <h4 class="font-medium mb-2 text-sm"><%= __('invalid_attendance_status') %></h4>
             <div class="max-h-48 overflow-auto border rounded">
               <table class="w-full text-xs">
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="px-2 py-1 text-left">ID</th>
-                    <th class="px-2 py-1 text-left">Student</th>
-                    <th class="px-2 py-1 text-left">Date</th>
-                    <th class="px-2 py-1 text-left">Status</th>
+                    <th class="px-2 py-1 text-left"><%= __('student') %></th>
+                    <th class="px-2 py-1 text-left"><%= __('date') %></th>
+                    <th class="px-2 py-1 text-left"><%= __('status_label') %></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -139,22 +139,22 @@
                       </tr>
                     <% }) %>
                   <% } else { %>
-                    <tr><td colspan="4" class="px-2 py-2 text-gray-500 text-center">No issues</td></tr>
+                    <tr><td colspan="4" class="px-2 py-2 text-gray-500 text-center"><%= __('no_issues') %></td></tr>
                   <% } %>
                 </tbody>
               </table>
             </div>
           </div>
           <div>
-            <h4 class="font-medium mb-2 text-sm">Period Records Without Daily Record</h4>
+            <h4 class="font-medium mb-2 text-sm"><%= __('period_records_without_daily') %></h4>
             <div class="max-h-48 overflow-auto border rounded">
               <table class="w-full text-xs">
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="px-2 py-1 text-left">ID</th>
-                    <th class="px-2 py-1 text-left">Student</th>
-                    <th class="px-2 py-1 text-left">Date</th>
-                    <th class="px-2 py-1 text-left">Period</th>
+                    <th class="px-2 py-1 text-left"><%= __('student') %></th>
+                    <th class="px-2 py-1 text-left"><%= __('date') %></th>
+                    <th class="px-2 py-1 text-left"><%= __('period') %></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,7 +168,7 @@
                       </tr>
                     <% }) %>
                   <% } else { %>
-                    <tr><td colspan="4" class="px-2 py-2 text-gray-500 text-center">No issues</td></tr>
+                    <tr><td colspan="4" class="px-2 py-2 text-gray-500 text-center"><%= __('no_issues') %></td></tr>
                   <% } %>
                 </tbody>
               </table>
@@ -176,7 +176,7 @@
           </div>
         </div>
       <% } else { %>
-        <p class="text-sm text-gray-500">Run integrity check to detect invalid statuses and data mismatches.</p>
+        <p class="text-sm text-gray-500"><%= __('run_integrity_check_hint') %></p>
       <% } %>
     </div>
 </div>
