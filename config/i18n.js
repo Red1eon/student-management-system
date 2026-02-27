@@ -4,12 +4,15 @@ const path = require('path');
 i18n.configure({
   locales: ['en', 'ja'],
   directory: path.join(__dirname, '..', 'locales'),
-  defaultLocale: process.env.DEFAULT_LANGUAGE || 'en',
+  defaultLocale: 'en',
   cookie: 'lang',
   queryParameter: 'lang',
   autoReload: true,
   updateFiles: false,
-  objectNotation: true
+  objectNotation: true,
+  syncFiles: false,
+  useCookie: true,
+  cookieName: 'lang'
 });
 
 module.exports = i18n;

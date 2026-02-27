@@ -5,6 +5,7 @@ const ClassModel = require('../models/classModel');
 const { logAudit } = require('../utils/auditLogger');
 const VALID_FEE_TYPES = new Set(['tuition', 'admission', 'exam', 'library', 'sports', 'other']);
 const VALID_FREQUENCIES = new Set(['one-time', 'monthly', 'quarterly', 'yearly']);
+const { allQuery } = require('../config/database');
 
 const pickAllowed = (value, allowed, fallback = null) => (allowed.has(value) ? value : fallback);
 const parseOptionalInt = (value) => {
@@ -43,6 +44,14 @@ const normalizeFeePayload = (body = {}) => {
   if (!payload.fee_name) throw new Error('Fee name is required.');
   if (!payload.academic_year) throw new Error('Academic year is required.');
   return payload;
+};
+
+const csvEscape = (value) => {
+  const text = String(value ?? '');
+  if (text.includes('"') || text.includes(',') || text.includes('\n')) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
 };
 
 const resolveValidFeeId = async (studentId, requestedFeeId, fallbackFeeId = null) => {
@@ -327,6 +336,43 @@ const feeController = {
       });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
+    }
+  },
+
+  exportPaymentsCsv: async (req, res) => {
+    try {
+      const rows = await allQuery(
+        `SELECT fp.payment_id, fp.receipt_number, fp.payment_date, fp.amount_paid, fp.payment_method,
+                fp.payment_status, fp.transaction_id, fp.remarks,
+                s.student_id, s.admission_number, u.first_name || ' ' || u.last_name AS student_name,
+                f.fee_name, f.fee_type
+         FROM fee_payments fp
+         JOIN students s ON fp.student_id = s.student_id
+         JOIN users u ON s.user_id = u.user_id
+         JOIN fees_structure f ON fp.fee_id = f.fee_id
+         ORDER BY fp.payment_date DESC`
+      );
+
+      const header = [
+        'payment_id', 'receipt_number', 'payment_date', 'student_id', 'admission_number',
+        'student_name', 'fee_name', 'fee_type', 'amount_paid', 'payment_method',
+        'payment_status', 'transaction_id', 'remarks'
+      ];
+
+      const csv = [header, ...rows.map((r) => [
+        r.payment_id, r.receipt_number, r.payment_date, r.student_id, r.admission_number,
+        r.student_name, r.fee_name, r.fee_type, r.amount_paid, r.payment_method,
+        r.payment_status, r.transaction_id, r.remarks
+      ])]
+        .map((row) => row.map(csvEscape).join(','))
+        .join('\n');
+
+      const fileName = `fees-report-${new Date().toISOString().slice(0, 10)}.csv`;
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+      return res.send(csv);
+    } catch (error) {
+      return res.status(500).render('error', { message: error.message });
     }
   }
 };

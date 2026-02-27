@@ -180,6 +180,16 @@ class NotificationModel {
 
     return result.id;
   }
+
+  static async getRecipientUserIds(notificationId) {
+    const rows = await allQuery(
+      `SELECT user_id
+       FROM user_notifications
+       WHERE notification_id = ?`,
+      [notificationId]
+    );
+    return rows.map((row) => row.user_id);
+  }
 }
 
 module.exports = NotificationModel;

@@ -1,8 +1,30 @@
 <div class="space-y-6 animate-fade-in">
   <div class="flex items-center justify-between">
     <h2 class="text-2xl font-bold text-gray-800">Audit Logs</h2>
-    <a href="/dashboard" class="text-blue-600 hover:underline">Back to Dashboard</a>
+    <div class="flex items-center gap-4">
+      <a href="/dashboard/audit/export?action=<%= encodeURIComponent((filters && filters.action) || '') %>&entity_type=<%= encodeURIComponent((filters && filters.entity_type) || '') %>&username=<%= encodeURIComponent((filters && filters.username) || '') %>&from=<%= encodeURIComponent((filters && filters.from) || '') %>&to=<%= encodeURIComponent((filters && filters.to) || '') %>&limit=<%= encodeURIComponent((filters && filters.limit) || '1000') %>"
+         class="text-blue-600 hover:underline">
+        Export CSV
+      </a>
+      <a href="/dashboard" class="text-blue-600 hover:underline">Back to Dashboard</a>
+    </div>
   </div>
+
+  <form method="GET" action="/dashboard/audit" class="bg-white rounded-xl shadow p-4 grid grid-cols-1 md:grid-cols-6 gap-3">
+    <input type="text" name="username" value="<%= (filters && filters.username) || '' %>" placeholder="Username"
+           class="border border-gray-300 rounded px-3 py-2">
+    <input type="text" name="action" value="<%= (filters && filters.action) || '' %>" placeholder="Action"
+           class="border border-gray-300 rounded px-3 py-2">
+    <input type="text" name="entity_type" value="<%= (filters && filters.entity_type) || '' %>" placeholder="Entity type"
+           class="border border-gray-300 rounded px-3 py-2">
+    <input type="date" name="from" value="<%= (filters && filters.from) || '' %>" class="border border-gray-300 rounded px-3 py-2">
+    <input type="date" name="to" value="<%= (filters && filters.to) || '' %>" class="border border-gray-300 rounded px-3 py-2">
+    <div class="flex gap-2">
+      <input type="number" min="1" max="1000" name="limit" value="<%= (filters && filters.limit) || '200' %>"
+             class="w-24 border border-gray-300 rounded px-3 py-2">
+      <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Filter</button>
+    </div>
+  </form>
 
   <div class="bg-white rounded-xl shadow overflow-hidden">
     <table class="w-full">

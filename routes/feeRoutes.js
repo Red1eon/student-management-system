@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const feeController = require('../controllers/feeController');
-const { requireAuth, requireRole, requireStudentAccess } = require('../middleware/authMiddleware');
+const { requireAuth, requireRole, requireStudentAccess, requirePermission } = require('../middleware/authMiddleware');
 
 router.get('/', requireAuth, requireRole(['admin', 'staff', 'accountant']), feeController.getFeeDashboard);
 router.get('/structure', requireAuth, requireRole(['admin', 'staff', 'accountant']), feeController.getFeeStructure);
@@ -16,5 +16,6 @@ router.get('/payment/:paymentId/edit', requireAuth, requireRole(['admin', 'staff
 router.post('/payment/:paymentId/edit', requireAuth, requireRole(['admin', 'staff', 'accountant']), feeController.postUpdatePayment);
 router.get('/receipt/:receiptNumber', requireAuth, feeController.getReceipt);
 router.get('/student/:studentId', requireAuth, requireStudentAccess('studentId', ['admin', 'staff', 'accountant']), feeController.getStudentFees);
+router.get('/export/csv', requireAuth, requirePermission('fees.export', ['admin', 'staff', 'accountant']), feeController.exportPaymentsCsv);
 
 module.exports = router;

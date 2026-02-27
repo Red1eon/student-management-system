@@ -478,25 +478,26 @@
   const dayPeriods = (periodLabels && periodLabels.length) ? periodLabels : ['P1', 'P2', 'P3', 'P4'];
   const dayDateValue = selectedDateIso || selectedDate || new Date().toISOString().slice(0, 10);
   const canEditDayAttendance = selectedMode === 'day' ? !!dateEditable : true;
+  const isJa = locale === 'ja';
 %>
 
 <div class="container-att">
   <div class="header-section">
-    <div class="subtitle">Early follow-up based on attendance trends</div>
+    <div class="subtitle"><%= isJa ? '出席傾向に基づく早期フォローアップ' : 'Early follow-up based on attendance trends' %></div>
     <div class="title-wrapper">
-      <h1 class="main-title">Attendance Management</h1>
-      <span class="badge">Student Management</span>
+      <h1 class="main-title"><%= isJa ? '出席管理' : 'Attendance Management' %></h1>
+      <span class="badge"><%= isJa ? '生徒管理' : 'Student Management' %></span>
     </div>
   </div>
 
   <% if (schoolStatus) { %>
     <div class="status-cards">
       <div class="status-card">
-        <div class="status-title">Today </div>
+        <div class="status-title"><%= isJa ? '今日' : 'Today' %></div>
         <div><%= schoolStatus.today.date %> - <%= schoolStatus.today.label %></div>
       </div>
       <div class="status-card">
-        <div class="status-title">Tomorrow </div>
+        <div class="status-title"><%= isJa ? '明日' : 'Tomorrow' %></div>
         <div><%= schoolStatus.tomorrow.date %> - <%= schoolStatus.tomorrow.label %></div>
       </div>
     </div>
@@ -510,8 +511,8 @@
   <% } %>
 
   <div class="view-toggle">
-    <button type="button" class="toggle-btn <%= selectedMode === 'month' ? 'active' : '' %>" onclick="setModeAndSearch('month')">Monthly View</button>
-    <button type="button" class="toggle-btn <%= selectedMode === 'day' ? 'active' : '' %>" onclick="setModeAndSearch('day')">Daily View</button>
+    <button type="button" class="toggle-btn <%= selectedMode === 'month' ? 'active' : '' %>" onclick="setModeAndSearch('month')"><%= isJa ? '月間表示' : 'Monthly View' %></button>
+    <button type="button" class="toggle-btn <%= selectedMode === 'day' ? 'active' : '' %>" onclick="setModeAndSearch('day')"><%= isJa ? '日次表示' : 'Daily View' %></button>
   </div>
 
   <div class="main-card">
@@ -519,9 +520,9 @@
       <input type="hidden" id="modeInput" name="mode" value="<%= selectedMode %>">
       <div class="toolbar-left">
         <div class="toolbar-item">
-          <label>Class</label>
+          <label><%= __('class') %></label>
           <select name="class_id" required>
-            <option value="">Select Class</option>
+            <option value=""><%= __('select_class') %></option>
             <% classes.forEach((c) => { %>
               <option value="<%= c.class_id %>" <%= String(selectedClass || '') === String(c.class_id) ? 'selected' : '' %>><%= c.class_name %> <%= c.section %></option>
             <% }) %>
@@ -529,29 +530,28 @@
         </div>
 
         <div class="toolbar-item" id="monthField" style="display:<%= selectedMode === 'month' ? 'block' : 'none' %>">
-          <label>Month</label>
+          <label><%= __('month') %></label>
           <input type="month" name="month" value="<%= selectedMonth || new Date().toISOString().slice(0, 7) %>">
         </div>
 
         <div class="toolbar-item" id="dateField" style="display:<%= selectedMode === 'day' ? 'block' : 'none' %>">
-          <label>Date</label>
+          <label><%= __('date') %></label>
           <input type="date" name="date" value="<%= dayDateValue %>">
         </div>
       </div>
-      <button type="submit" class="search-btn">Search</button>
+      <button type="submit" class="search-btn"><%= __('search') %></button>
     </form>
 
     <div class="action-bar">
-      <button type="button" class="action-link" id="bulkModeBtn" onclick="toggleBulkMode()">Bulk Input Mode</button>
-      <label><input type="checkbox" id="highlightAbsent"> Highlight Absentees</label>
-      <label><input type="checkbox" checked> Immigration Format</label>
+      <button type="button" class="action-link" id="bulkModeBtn" onclick="toggleBulkMode()"><%= isJa ? '一括入力モード' : 'Bulk Input Mode' %></button>
+      <label><input type="checkbox" id="highlightAbsent"> <%= isJa ? '欠席者を強調表示' : 'Highlight Absentees' %></label>
     </div>
 
     <div class="stats-bar">
-      <div class="student-count">Total Students <strong><%= studentTotal %></strong></div>
+      <div class="student-count"><%= isJa ? '生徒数' : 'Total Students' %> <strong><%= studentTotal %></strong></div>
       <div>
-        <button type="button" class="view-option active" id="scopeFullBtn" onclick="toggleScope('full')">Full Enrollment</button>
-        <button type="button" class="view-option" id="scopeMonthBtn" onclick="toggleScope('month')">This Month</button>
+        <button type="button" class="view-option active" id="scopeFullBtn" onclick="toggleScope('full')"><%= isJa ? '全在籍' : 'Full Enrollment' %></button>
+        <button type="button" class="view-option" id="scopeMonthBtn" onclick="toggleScope('month')"><%= isJa ? '今月' : 'This Month' %></button>
       </div>
     </div>
 
@@ -563,23 +563,23 @@
           <input type="hidden" name="class_id" value="<%= selectedClass %>">
           <input type="hidden" name="month" value="<%= selectedMonth %>">
           <div id="bulkControls" class="bulk-controls">
-            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('present')">Fill All Present</button>
-            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('absent')">Fill All Absent</button>
-            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('late')">Fill All Late</button>
-            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('excused')">Fill All Excused</button>
-            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('')">Clear All</button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('present')"><%= isJa ? '全員出席' : 'Fill All Present' %></button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('absent')"><%= isJa ? '全員欠席' : 'Fill All Absent' %></button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('late')"><%= isJa ? '全員遅刻' : 'Fill All Late' %></button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('excused')"><%= isJa ? '全員公欠' : 'Fill All Excused' %></button>
+            <button type="button" class="bulk-btn" onclick="fillMonthlyStatus('')"><%= isJa ? '全消去' : 'Clear All' %></button>
           </div>
 
           <div class="table-container">
             <table class="attendance-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding-left:16px;">Student Info</th>
-                  <th>Present</th>
-                  <th>Absent</th>
-                  <th>Late</th>
-                  <th>Excused</th>
-                  <th>Rate</th>
+                  <th style="text-align:left;padding-left:16px;"><%= isJa ? '生徒情報' : 'Student Info' %></th>
+                  <th><%= isJa ? '出席' : 'Present' %></th>
+                  <th><%= isJa ? '欠席' : 'Absent' %></th>
+                  <th><%= isJa ? '遅刻' : 'Late' %></th>
+                  <th><%= isJa ? '公欠' : 'Excused' %></th>
+                  <th><%= isJa ? '出席率' : 'Rate' %></th>
                   <% (monthDates || []).forEach((d) => { %>
                     <th><%= d.slice(5) %></th>
                   <% }) %>
@@ -597,7 +597,7 @@
                       <div class="student-info">
                         <div class="student-avatar"><%= initials || 'ST' %></div>
                         <div>
-                          <div class="student-id">ID: <%= s.admission_number || s.roll_number || ('S' + s.student_id) %></div>
+                          <div class="student-id"><%= isJa ? 'ID' : 'ID' %>: <%= s.admission_number || s.roll_number || ('S' + s.student_id) %></div>
                           <div class="student-name"><%= s.first_name %> <%= s.last_name %></div>
                         </div>
                       </div>
@@ -609,7 +609,7 @@
                     <td><span class="stat-number"><%= sum.excused %></span></td>
                     <td>
                       <span class="stat-number rate-<%= sum.rate >= 90 ? 'good' : sum.rate >= 75 ? 'warning' : 'danger' %>" 
-                            title="Effective Absent: <%= sum.effectiveAbsent %> (3 late = 1 absent)">
+                            title="<%= isJa ? `実質欠席: ${sum.effectiveAbsent}（遅刻3回=欠席1回）` : `Effective Absent: ${sum.effectiveAbsent} (3 late = 1 absent)` %>">
                         <%= sum.rate %>%
                       </span>
                     </td>
@@ -630,18 +630,18 @@
           </div>
 
           <div class="legend">
-            <div class="legend-item"><div class="legend-box" style="background:#e8f5e9;border:1px solid #2e7d32;"></div><span>Present</span></div>
-            <div class="legend-item"><div class="legend-box" style="background:#ffebee;border:1px solid #c62828;"></div><span>Absent</span></div>
-            <div class="legend-item"><div class="legend-box" style="background:#fff3e0;border:1px solid #ef6c00;"></div><span>Late</span></div>
-            <div class="legend-item"><div class="legend-box" style="background:#e3f2fd;border:1px solid #1565c0;"></div><span>Excused</span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#e8f5e9;border:1px solid #2e7d32;"></div><span><%= isJa ? '出席' : 'Present' %></span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#ffebee;border:1px solid #c62828;"></div><span><%= isJa ? '欠席' : 'Absent' %></span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#fff3e0;border:1px solid #ef6c00;"></div><span><%= isJa ? '遅刻' : 'Late' %></span></div>
+            <div class="legend-item"><div class="legend-box" style="background:#e3f2fd;border:1px solid #1565c0;"></div><span><%= isJa ? '公欠' : 'Excused' %></span></div>
             <div class="legend-item" style="margin-left:auto;font-size:11px;color:#64748b;">
-              <span title="3 late days = 1 absent day in rate calculation">ℹ️ Rate: 3 Late = 1 Absent | Excused = Present</span>
+              <span title="<%= isJa ? '出席率計算では遅刻3回を欠席1回として換算します' : '3 late days = 1 absent day in rate calculation' %>"><%= isJa ? 'ℹ️ 出席率: 遅刻3回 = 欠席1回 / 公欠 = 出席扱い' : 'ℹ️ Rate: 3 Late = 1 Absent | Excused = Present' %></span>
             </div>
           </div>
 
 
           <div class="save-row">
-            <button type="submit" class="save-btn">Save Monthly Attendance</button>
+            <button type="submit" class="save-btn"><%= isJa ? '月間出席を保存' : 'Save Monthly Attendance' %></button>
           </div>
         </form>
       </div>
@@ -649,7 +649,7 @@
       <div id="dailyView" class="daily-view <%= selectedMode === 'day' ? 'active' : '' %>">
         <% if (!canEditDayAttendance) { %>
           <div class="mx-4 mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-800 text-sm">
-            Attendance editing is locked for <strong><%= dayDateValue %></strong>. Submit a correction request if changes are needed.
+            <%= isJa ? '次の日付の出席編集はロックされています: ' : 'Attendance editing is locked for ' %><strong><%= dayDateValue %></strong><%= isJa ? '。修正が必要な場合は訂正申請を提出してください。' : '. Submit a correction request if changes are needed.' %>
           </div>
         <% } %>
         <div class="action-bar">
@@ -657,9 +657,9 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="class_id" value="<%= selectedClass %>">
             <input type="hidden" name="date" value="<%= dayDateValue %>">
-            <label class="text-xs text-slate-600">New Period</label>
+            <label class="text-xs text-slate-600"><%= isJa ? '新しい時限' : 'New Period' %></label>
             <input type="text" name="period_label" placeholder="P5" class="border border-slate-300 rounded px-2 py-1 text-xs w-20" required <%= !canEditDayAttendance ? 'disabled' : '' %>>
-            <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>>Add Period</button>
+            <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '時限追加' : 'Add Period' %></button>
           </form>
           <div class="flex gap-2 flex-wrap">
             <% dayPeriods.forEach((periodLabel) => { %>
@@ -668,7 +668,7 @@
                 <input type="hidden" name="class_id" value="<%= selectedClass %>">
                 <input type="hidden" name="date" value="<%= dayDateValue %>">
                 <input type="hidden" name="period_label" value="<%= periodLabel %>">
-                <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>>Delete <%= periodLabel %></button>
+                <button type="submit" class="view-option" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '削除' : 'Delete' %> <%= periodLabel %></button>
               </form>
             <% }) %>
           </div>
@@ -684,7 +684,7 @@
           <div class="period-tabs">
             <% dayPeriods.forEach((periodLabel, idx) => {
               const periodKey = periodLabel.replace(/[^A-Za-z0-9_-]/g, '_');
-              const displayLabel = /^P\d+$/i.test(periodLabel) ? `Period ${periodLabel.slice(1)}` : periodLabel;
+              const displayLabel = /^P\d+$/i.test(periodLabel) ? `${isJa ? '時限' : 'Period'} ${periodLabel.slice(1)}` : periodLabel;
             %>
               <div class="period-tab <%= idx === 0 ? 'active' : '' %>" data-period-label="<%= periodLabel %>" onclick="switchPeriod('<%= periodLabel %>', '<%= periodKey %>')"><%= displayLabel %></div>
             <% }) %>
@@ -694,9 +694,9 @@
             <table class="attendance-table">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding-left:16px;">Student Info</th>
+                  <th style="text-align:left;padding-left:16px;"><%= isJa ? '生徒情報' : 'Student Info' %></th>
                   <% dayPeriods.forEach((periodLabel) => {
-                    const displayLabel = /^P\d+$/i.test(periodLabel) ? `Period ${periodLabel.slice(1)}` : periodLabel;
+                    const displayLabel = /^P\d+$/i.test(periodLabel) ? `${isJa ? '時限' : 'Period'} ${periodLabel.slice(1)}` : periodLabel;
                   %>
                     <th class="period-col"><%= displayLabel %></th>
                   <% }) %>
@@ -727,10 +727,10 @@
                       <td class="period-col">
                         <input type="hidden" id="day-status-<%= sid %>-<%= periodKey %>" name="attendance[<%= sid %>][periods][<%= periodLabel %>]" value="<%= pStatus %>">
                         <div class="status-selector" data-student="<%= sid %>" data-period="<%= periodKey %>">
-                          <button type="button" class="status-btn present <%= pStatus === 'present' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'present')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Present</button>
-                          <button type="button" class="status-btn absent <%= pStatus === 'absent' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'absent')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Absent</button>
-                          <button type="button" class="status-btn late <%= pStatus === 'late' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'late')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Late</button>
-                          <button type="button" class="status-btn excused <%= pStatus === 'excused' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'excused')" <%= !canEditDayAttendance ? 'disabled' : '' %>>Excused</button>
+                          <button type="button" class="status-btn present <%= pStatus === 'present' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'present')" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '出席' : 'Present' %></button>
+                          <button type="button" class="status-btn absent <%= pStatus === 'absent' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'absent')" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '欠席' : 'Absent' %></button>
+                          <button type="button" class="status-btn late <%= pStatus === 'late' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'late')" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '遅刻' : 'Late' %></button>
+                          <button type="button" class="status-btn excused <%= pStatus === 'excused' ? 'active' : '' %>" onclick="setDailyStatus('<%= sid %>', '<%= periodKey %>', 'excused')" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '公欠' : 'Excused' %></button>
                         </div>
                       </td>
                     <% }) %>
@@ -741,16 +741,16 @@
           </div>
 
           <div class="save-row">
-            <button type="submit" class="save-btn" <%= !canEditDayAttendance ? 'disabled' : '' %>>Save Daily Attendance</button>
+            <button type="submit" class="save-btn" <%= !canEditDayAttendance ? 'disabled' : '' %>><%= isJa ? '日次出席を保存' : 'Save Daily Attendance' %></button>
           </div>
         </form>
       </div>
     <% } else { %>
       <div class="p-10 text-center text-slate-500">
         <% if (selectedClass) { %>
-          No students found in this class.
+          <%= isJa ? 'このクラスに生徒が見つかりません。' : 'No students found in this class.' %>
         <% } else { %>
-          Select class and period to load students.
+          <%= isJa ? 'クラスと時限を選択して生徒を読み込んでください。' : 'Select class and period to load students.' %>
         <% } %>
       </div>
     <% } %>

@@ -1,0 +1,40 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Backup & Restore</h2>
+    <form method="POST" action="/admin/backup/create">
+      <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create Backup</button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-xl shadow overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left">File</th>
+          <th class="px-4 py-3 text-left">Modified</th>
+          <th class="px-4 py-3 text-left">Size (bytes)</th>
+          <th class="px-4 py-3 text-left">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% if (!files || files.length === 0) { %>
+          <tr><td colspan="4" class="px-4 py-4 text-center text-gray-500">No backups yet</td></tr>
+        <% } else { %>
+          <% files.forEach((f) => { %>
+            <tr>
+              <td class="px-4 py-3"><%= f.name %></td>
+              <td class="px-4 py-3"><%= f.modified_at %></td>
+              <td class="px-4 py-3"><%= f.size %></td>
+              <td class="px-4 py-3">
+                <form method="POST" action="/admin/backup/restore" onsubmit="return confirm('Restore this backup? This replaces current DB file.');">
+                  <input type="hidden" name="backup_name" value="<%= f.name %>">
+                  <button class="text-blue-600 hover:underline">Restore</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
+</div>

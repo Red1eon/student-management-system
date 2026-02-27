@@ -44,7 +44,7 @@
             <% if (user.userType === 'admin') { %>
                 <a href="/courses" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/courses') ? 'bg-blue-50 text-blue-600' : '' %>">
                     <i class="fas fa-graduation-cap w-5"></i>
-                    <span>Courses</span>
+                    <span><%= locale === 'ja' ? 'コース' : 'Courses' %></span>
                 </a>
             <% } %>
 
@@ -85,9 +85,31 @@
 
             <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-notes-medical w-5"></i>
-                <span>Guidance</span>
+                <span><%= locale === 'ja' ? '指導記録' : 'Guidance' %></span>
             </a>
 
+            <% if (user.userType === 'admin') { %>
+                <a href="/admin/reports" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/admin/reports') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="/admin/permissions" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/admin/permissions') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-user-shield w-5"></i>
+                    <span>Permissions</span>
+                </a>
+                <a href="/admin/scheduler" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/admin/scheduler') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-clock w-5"></i>
+                    <span>Scheduler</span>
+                </a>
+                <a href="/admin/backup" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/admin/backup') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-database w-5"></i>
+                    <span>Backup</span>
+                </a>
+                <a href="/admin/security" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/admin/security') ? 'bg-blue-50 text-blue-600' : '' %>">
+                    <i class="fas fa-shield-alt w-5"></i>
+                    <span>Security</span>
+                </a>
+            <% } %>
         <%# ==================== TEACHER MENU ==================== %>
         <% } else if (user.userType === 'teacher') { %>
         
@@ -133,7 +155,7 @@
 
             <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-notes-medical w-5"></i>
-                <span>Guidance</span>
+                <span><%= locale === 'ja' ? '指導記録' : 'Guidance' %></span>
             </a>
         
         <%# ==================== STUDENT MENU ==================== %>
@@ -181,7 +203,7 @@
 
             <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-notes-medical w-5"></i>
-                <span>Guidance</span>
+                <span><%= locale === 'ja' ? '指導記録' : 'Guidance' %></span>
             </a>
         
         <%# ==================== PARENT MENU ==================== %>
@@ -219,7 +241,7 @@
 
             <a href="/guidance" class="sidebar-item flex items-center space-x-3 px-4 py-3 text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 <%= currentPath.startsWith('/guidance') ? 'bg-blue-50 text-blue-600' : '' %>">
                 <i class="fas fa-notes-medical w-5"></i>
-                <span>Guidance</span>
+                <span><%= locale === 'ja' ? '指導記録' : 'Guidance' %></span>
             </a>
         
         <% } %>
@@ -237,3 +259,4 @@
         </a>
     </div>
 </aside>
+

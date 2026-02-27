@@ -1,0 +1,38 @@
+Graduation Project Schedule
+Project Title: Student Management System
+Start Date: January 13(1/13)
+Final Presentation: 
+
+January 13 – January 20
+Requirement Analysis（要件分析）
+System Design（設計書作成）
+Database Design（データベース設計）
+
+January 20 – February 3
+Implementation / Development（実装・開発）
+Backend Development using Express & SQLite（バックエンド開発）
+Frontend UI Development（フロントエンド開発）
+
+February 3 – February 10
+Testing（テスト）
+Feature Testing（機能テスト）
+System Integration Testing（結合テスト）
+
+February 10 – February 17
+Bug Fixing（修正）
+UI Improvement（画面改善）
+Performance Optimization（性能改善）
+
+February 17 – February 24
+Documentation Writing（ドキュメント作成）
+Database Design Document（DB設計書）
+URL Design Document（URL設計書）
+Screen Design Document（画面設計書）
+
+February 24 –
+Presentation Preparation（発表準備）
+Slide Creation（スライド作成）
+Final System Check（最終確認）
+
+
+Final Presentation（最終発表）

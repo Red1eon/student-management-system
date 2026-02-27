@@ -1,0 +1,105 @@
+<div class="space-y-6 animate-fade-in">
+  <h2 class="text-2xl font-bold text-gray-800">Security Center</h2>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <h3 class="text-lg font-semibold mb-4">Password Policy & Lockout</h3>
+    <form method="POST" action="/admin/security/settings" class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+      <div>
+        <label class="block text-gray-600 mb-1">Min Password Length</label>
+        <input type="number" name="password_min_length" min="6" value="<%= settings.password_min_length %>" class="w-full border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div class="flex items-end pb-2">
+        <label class="inline-flex items-center gap-2">
+          <input type="checkbox" name="password_require_number" value="1" <%= settings.password_require_number ? 'checked' : '' %>>
+          <span>Require Number</span>
+        </label>
+      </div>
+      <div class="flex items-end pb-2">
+        <label class="inline-flex items-center gap-2">
+          <input type="checkbox" name="password_require_special" value="1" <%= settings.password_require_special ? 'checked' : '' %>>
+          <span>Require Special Character</span>
+        </label>
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">Max Failed Attempts</label>
+        <input type="number" name="max_failed_login_attempts" min="1" value="<%= settings.max_failed_login_attempts %>" class="w-full border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">Lockout Window (minutes)</label>
+        <input type="number" name="lockout_window_minutes" min="1" value="<%= settings.lockout_window_minutes %>" class="w-full border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-gray-600 mb-1">Lockout Duration (minutes)</label>
+        <input type="number" name="lockout_duration_minutes" min="1" value="<%= settings.lockout_duration_minutes %>" class="w-full border border-gray-300 rounded px-3 py-2">
+      </div>
+      <div class="md:col-span-3 flex justify-end">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Security Settings</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <h3 class="text-lg font-semibold mb-4">Active Sessions</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left">User</th>
+            <th class="px-3 py-2 text-left">Role</th>
+            <th class="px-3 py-2 text-left">Expires</th>
+            <th class="px-3 py-2 text-left">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% if (!sessions || sessions.length === 0) { %>
+            <tr><td colspan="4" class="px-3 py-3 text-center text-gray-500">No active sessions found</td></tr>
+          <% } else { %>
+            <% sessions.forEach((s) => { %>
+              <tr>
+                <td class="px-3 py-2"><%= s.user ? (s.user.username || s.user.email || s.user.id) : 'Anonymous' %></td>
+                <td class="px-3 py-2"><%= s.user ? (s.user.userType || s.user.user_type || '-') : '-' %></td>
+                <td class="px-3 py-2"><%= s.expired || '-' %></td>
+                <td class="px-3 py-2">
+                  <form method="POST" action="/admin/security/force-logout" onsubmit="return confirm('Force logout this session?');">
+                    <input type="hidden" name="sid" value="<%= s.sid %>">
+                    <button class="text-red-600 hover:underline">Force Logout</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6">
+    <h3 class="text-lg font-semibold mb-4">Recent Failed Login Attempts</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-3 py-2 text-left">Time</th>
+            <th class="px-3 py-2 text-left">Username</th>
+            <th class="px-3 py-2 text-left">IP</th>
+            <th class="px-3 py-2 text-left">Reason</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <% if (!failedLogins || failedLogins.length === 0) { %>
+            <tr><td colspan="4" class="px-3 py-3 text-center text-gray-500">No failed attempts logged</td></tr>
+          <% } else { %>
+            <% failedLogins.forEach((a) => { %>
+              <tr>
+                <td class="px-3 py-2"><%= a.attempted_at %></td>
+                <td class="px-3 py-2"><%= a.username %></td>
+                <td class="px-3 py-2"><%= a.ip_address || '-' %></td>
+                <td class="px-3 py-2"><%= a.reason || '-' %></td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

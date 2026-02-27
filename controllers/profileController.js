@@ -2,6 +2,24 @@ const UserModel = require('../models/userModel');
 const StudentModel = require('../models/studentModel');
 const TeacherModel = require('../models/teacherModel');
 const bcrypt = require('bcryptjs');
+const AppSettingModel = require('../models/appSettingModel');
+
+async function validatePasswordPolicy(password) {
+  const minLength = await AppSettingModel.getNumber('security.password_min_length', 8);
+  const requireNumber = await AppSettingModel.getNumber('security.password_require_number', 1);
+  const requireSpecial = await AppSettingModel.getNumber('security.password_require_special', 0);
+
+  if (!password || password.length < minLength) {
+    return `New password must be at least ${minLength} characters`;
+  }
+  if (requireNumber && !/[0-9]/.test(password)) {
+    return 'New password must include at least one number';
+  }
+  if (requireSpecial && !/[^A-Za-z0-9]/.test(password)) {
+    return 'New password must include at least one special character';
+  }
+  return null;
+}
 
 const profileController = {
   getEditProfile: async (req, res) => {
@@ -98,8 +116,9 @@ const profileController = {
         return res.redirect('/profile/change-password?error=All password fields are required');
       }
 
-      if (new_password.length < 6) {
-        return res.redirect('/profile/change-password?error=New password must be at least 6 characters');
+      const policyError = await validatePasswordPolicy(new_password);
+      if (policyError) {
+        return res.redirect(`/profile/change-password?error=${encodeURIComponent(policyError)}`);
       }
       
       if (new_password !== confirm_password) {

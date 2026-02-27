@@ -4,6 +4,7 @@ const ClassModel = require('../models/classModel');
 const SubjectModel = require('../models/subjectModel');
 const StudentModel = require('../models/studentModel');
 const { calculateGrade } = require('../utils/helpers');
+const { allQuery, getQuery } = require('../config/database');
 
 const NONE_VALUES = new Set(['none', 'なし', 'n/a', 'na', 'null', '-']);
 
@@ -28,6 +29,14 @@ function pickInputValue(primary, secondary) {
   const first = toNullableText(primary);
   if (first !== null) return first;
   return secondary;
+}
+
+function csvEscape(value) {
+  const text = String(value ?? '');
+  if (text.includes('"') || text.includes(',') || text.includes('\n')) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
 }
 
 async function resolveClassId(classInput) {
@@ -208,6 +217,133 @@ const examController = {
       res.render('exams/student-results', { title: 'Student Results', student, results });
     } catch (error) {
       res.status(500).render('error', { message: error.message });
+    }
+  },
+
+  exportResultsCsv: async (req, res) => {
+    try {
+      const classId = Number.parseInt(req.query.class_id, 10);
+      const examId = Number.parseInt(req.query.exam_id, 10);
+
+      let sql = `
+        SELECT er.result_id, er.exam_id, e.exam_name, e.exam_type, e.exam_date,
+               c.class_name, c.section, sub.subject_name,
+               s.student_id, s.admission_number, u.first_name || ' ' || u.last_name AS student_name,
+               er.marks_obtained, e.total_marks, er.grade, er.remarks
+        FROM exam_results er
+        JOIN exams e ON e.exam_id = er.exam_id
+        JOIN students s ON s.student_id = er.student_id
+        JOIN users u ON u.user_id = s.user_id
+        JOIN classes c ON c.class_id = e.class_id
+        JOIN subjects sub ON sub.subject_id = e.subject_id
+      `;
+      const where = [];
+      const params = [];
+      if (Number.isInteger(classId) && classId > 0) {
+        where.push('e.class_id = ?');
+        params.push(classId);
+      }
+      if (Number.isInteger(examId) && examId > 0) {
+        where.push('e.exam_id = ?');
+        params.push(examId);
+      }
+      if (where.length) sql += ` WHERE ${where.join(' AND ')}`;
+      sql += ' ORDER BY e.exam_date DESC, e.exam_id DESC, er.marks_obtained DESC';
+
+      const rows = await allQuery(sql, params);
+      const header = [
+        'result_id', 'exam_id', 'exam_name', 'exam_type', 'exam_date', 'class_name', 'section',
+        'subject_name', 'student_id', 'admission_number', 'student_name',
+        'marks_obtained', 'total_marks', 'grade', 'remarks'
+      ];
+      const csv = [header, ...rows.map((r) => [
+        r.result_id, r.exam_id, r.exam_name, r.exam_type, r.exam_date, r.class_name, r.section,
+        r.subject_name, r.student_id, r.admission_number, r.student_name,
+        r.marks_obtained, r.total_marks, r.grade, r.remarks
+      ])]
+        .map((row) => row.map(csvEscape).join(','))
+        .join('\n');
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="exam-results-${new Date().toISOString().slice(0, 10)}.csv"`);
+      return res.send(csv);
+    } catch (error) {
+      return res.status(500).render('error', { message: error.message });
+    }
+  },
+
+  exportStudentProgressCsv: async (req, res) => {
+    try {
+      const studentId = Number.parseInt(req.params.studentId, 10);
+      if (!Number.isInteger(studentId) || studentId <= 0) {
+        return res.status(400).render('error', { message: 'Invalid student id' });
+      }
+
+      const student = await getQuery(
+        `SELECT s.student_id, s.admission_number, u.first_name, u.last_name
+         FROM students s
+         JOIN users u ON s.user_id = u.user_id
+         WHERE s.student_id = ?`,
+        [studentId]
+      );
+      if (!student) return res.status(404).render('404', { title: 'Page Not Found' });
+
+      const attendance = await getQuery(
+        `SELECT
+           SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) AS present_count,
+           COUNT(*) AS total_count
+         FROM attendance
+         WHERE student_id = ?`,
+        [studentId]
+      );
+
+      const examRows = await allQuery(
+        `SELECT e.exam_name, e.exam_date, sub.subject_name, er.marks_obtained, e.total_marks, er.grade
+         FROM exam_results er
+         JOIN exams e ON e.exam_id = er.exam_id
+         JOIN subjects sub ON sub.subject_id = e.subject_id
+         WHERE er.student_id = ?
+         ORDER BY e.exam_date DESC`,
+        [studentId]
+      );
+
+      const feeSummary = await getQuery(
+        `SELECT
+           COALESCE(SUM(fp.amount_paid), 0) AS total_paid,
+           COUNT(fp.payment_id) AS payment_count
+         FROM fee_payments fp
+         WHERE fp.student_id = ?`,
+        [studentId]
+      );
+
+      const attendancePct = attendance?.total_count
+        ? ((Number(attendance.present_count || 0) / Number(attendance.total_count || 1)) * 100).toFixed(2)
+        : '0.00';
+
+      const lines = [];
+      lines.push(['student_id', 'admission_number', 'student_name', 'attendance_percent', 'total_paid', 'payment_count']
+        .map(csvEscape).join(','));
+      lines.push([
+        student.student_id,
+        student.admission_number,
+        `${student.first_name} ${student.last_name}`.trim(),
+        attendancePct,
+        feeSummary?.total_paid || 0,
+        feeSummary?.payment_count || 0
+      ].map(csvEscape).join(','));
+      lines.push('');
+      lines.push(['exam_name', 'exam_date', 'subject_name', 'marks_obtained', 'total_marks', 'grade'].map(csvEscape).join(','));
+      for (const row of examRows) {
+        lines.push([
+          row.exam_name, row.exam_date, row.subject_name, row.marks_obtained, row.total_marks, row.grade
+        ].map(csvEscape).join(','));
+      }
+
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="student-progress-${studentId}-${new Date().toISOString().slice(0, 10)}.csv"`);
+      return res.send(lines.join('\n'));
+    } catch (error) {
+      return res.status(500).render('error', { message: error.message });
     }
   }
 };

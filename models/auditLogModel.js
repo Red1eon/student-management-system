@@ -30,6 +30,44 @@ class AuditLogModel {
       [limit]
     );
   }
+
+  static async getFiltered(filters = {}) {
+    const where = [];
+    const params = [];
+
+    if (filters.action) {
+      where.push('al.action = ?');
+      params.push(filters.action);
+    }
+    if (filters.entity_type) {
+      where.push('al.entity_type = ?');
+      params.push(filters.entity_type);
+    }
+    if (filters.username) {
+      where.push('u.username LIKE ?');
+      params.push(`%${filters.username}%`);
+    }
+    if (filters.from) {
+      where.push('date(al.created_at) >= date(?)');
+      params.push(filters.from);
+    }
+    if (filters.to) {
+      where.push('date(al.created_at) <= date(?)');
+      params.push(filters.to);
+    }
+
+    const limit = Math.min(Number(filters.limit) || 200, 1000);
+    const sql = `
+      SELECT al.*, u.username, u.first_name, u.last_name
+      FROM audit_logs al
+      LEFT JOIN users u ON al.user_id = u.user_id
+      ${where.length ? `WHERE ${where.join(' AND ')}` : ''}
+      ORDER BY al.created_at DESC
+      LIMIT ?
+    `;
+    params.push(limit);
+    return allQuery(sql, params);
+  }
 }
 
 module.exports = AuditLogModel;

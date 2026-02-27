@@ -2,6 +2,32 @@ const UserModel = require('../models/userModel');
 const StudentModel = require('../models/studentModel');
 const TeacherModel = require('../models/teacherModel');
 const { logAudit } = require('../utils/auditLogger');
+const AppSettingModel = require('../models/appSettingModel');
+const LoginAttemptModel = require('../models/loginAttemptModel');
+
+function getRequestIp(req) {
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || req.ip || req.connection?.remoteAddress || null;
+}
+
+async function resolveLockoutConfig() {
+  const maxAttempts = await AppSettingModel.getNumber('security.max_failed_login_attempts', 5);
+  const windowMinutes = await AppSettingModel.getNumber('security.lockout_window_minutes', 15);
+  const lockoutMinutes = await AppSettingModel.getNumber('security.lockout_duration_minutes', 15);
+  return {
+    maxAttempts: Math.max(1, maxAttempts),
+    windowMinutes: Math.max(1, windowMinutes),
+    lockoutMinutes: Math.max(1, lockoutMinutes)
+  };
+}
+
+function isTemporarilyLocked(lastAttemptAt, count, config) {
+  if (!lastAttemptAt || count < config.maxAttempts) return false;
+  const last = new Date(lastAttemptAt).getTime();
+  if (!Number.isFinite(last)) return false;
+  const elapsedMinutes = (Date.now() - last) / (1000 * 60);
+  return elapsedMinutes < config.lockoutMinutes;
+}
 
 const authController = {
   getLogin: (req, res) => {
@@ -16,9 +42,28 @@ const authController = {
     const { username, password } = req.body;
     
     try {
+      const ipAddress = getRequestIp(req);
+      const config = await resolveLockoutConfig();
+      const recentFailureMeta = await LoginAttemptModel.countRecentFailures({
+        username,
+        ipAddress,
+        windowMinutes: config.windowMinutes
+      });
+
+      if (isTemporarilyLocked(recentFailureMeta.lastAttemptAt, recentFailureMeta.count, config)) {
+        await LoginAttemptModel.record({ username, ipAddress, success: false, reason: 'account_locked' });
+        await logAudit(req, 'LOGIN_FAILED', 'user', username, { reason: 'account_locked' });
+        return res.render('auth/login', {
+          title: 'Login',
+          layout: false,
+          error: `Too many failed attempts. Try again in about ${config.lockoutMinutes} minutes.`
+        });
+      }
+
       const user = await UserModel.findByUsername(username);
       
       if (!user || !(await UserModel.verifyPassword(password, user.password_hash))) {
+        await LoginAttemptModel.record({ username, ipAddress, success: false, reason: 'invalid_credentials' });
         await logAudit(req, 'LOGIN_FAILED', 'user', username, { reason: 'invalid_credentials' });
         return res.render('auth/login', { 
           title: 'Login', 
@@ -28,6 +73,7 @@ const authController = {
       }
 
       if (!user.is_active) {
+        await LoginAttemptModel.record({ username, ipAddress, success: false, reason: 'account_disabled' });
         await logAudit(req, 'LOGIN_FAILED', 'user', user.user_id, { reason: 'account_disabled' });
         return res.render('auth/login', { 
           title: 'Login', 
@@ -63,6 +109,7 @@ const authController = {
       }
 
       req.session.user = sessionUser;
+      await LoginAttemptModel.record({ username, ipAddress, success: true, reason: 'login_success' });
       await logAudit(req, 'LOGIN_SUCCESS', 'user', user.user_id, { user_type: user.user_type });
 
       // Redirect based on role
@@ -80,6 +127,7 @@ const authController = {
       
     } catch (error) {
       console.error('Login error:', error);
+      await LoginAttemptModel.record({ username, ipAddress: getRequestIp(req), success: false, reason: 'system_error' });
       await logAudit(req, 'LOGIN_FAILED', 'user', username, { reason: 'system_error' });
       res.render('auth/login', { 
         title: 'Login', 

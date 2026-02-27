@@ -1,4 +1,5 @@
 const StudentModel = require('../models/studentModel');
+const RolePermissionModel = require('../models/rolePermissionModel');
 
 const requireAuth = (req, res, next) => {
     if (!req.session.user) {
@@ -61,5 +62,23 @@ const requireAuth = (req, res, next) => {
       }
     };
   };
+
+  const requirePermission = (permissionKey, fallbackRoles = []) => {
+    return async (req, res, next) => {
+      try {
+        if (!req.session.user) return res.redirect('/auth/login');
+        const role = req.session.user.userType || req.session.user.user_type;
+        if (fallbackRoles.includes(role)) return next();
+
+        const allowed = await RolePermissionModel.isAllowed(role, permissionKey);
+        if (!allowed) {
+          return res.status(403).render('error', { message: 'Access denied' });
+        }
+        return next();
+      } catch (error) {
+        return res.status(500).render('error', { message: error.message });
+      }
+    };
+  };
   
-  module.exports = { requireAuth, requireRole, requireOwnershipOrRole, requireStudentAccess };
+  module.exports = { requireAuth, requireRole, requireOwnershipOrRole, requireStudentAccess, requirePermission };

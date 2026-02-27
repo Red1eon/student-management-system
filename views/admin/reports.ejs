@@ -1,0 +1,35 @@
+<div class="space-y-6 animate-fade-in">
+  <h2 class="text-2xl font-bold text-gray-800">Reports & Exports</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <a href="/attendance/report/export" class="bg-white p-5 rounded-xl shadow hover:shadow-md">
+      <h3 class="font-semibold text-gray-800">Attendance Report CSV</h3>
+      <p class="text-sm text-gray-600 mt-1">Export attendance summary report.</p>
+    </a>
+    <a href="/fees/export/csv" class="bg-white p-5 rounded-xl shadow hover:shadow-md">
+      <h3 class="font-semibold text-gray-800">Fees Report CSV</h3>
+      <p class="text-sm text-gray-600 mt-1">Export all fee payment transactions.</p>
+    </a>
+    <a href="/exams/export/csv" class="bg-white p-5 rounded-xl shadow hover:shadow-md">
+      <h3 class="font-semibold text-gray-800">Exam Results CSV</h3>
+      <p class="text-sm text-gray-600 mt-1">Export exam and marks data across classes.</p>
+    </a>
+    <form action="/exams/student/1/progress/export" method="GET" class="bg-white p-5 rounded-xl shadow">
+      <h3 class="font-semibold text-gray-800">Student Progress CSV</h3>
+      <p class="text-sm text-gray-600 mt-1 mb-3">Enter student id for progress export.</p>
+      <div class="flex items-center gap-2">
+        <input type="number" id="studentId" min="1" value="1" class="border border-gray-300 rounded px-3 py-2 w-28">
+        <button type="button" onclick="exportStudentProgress()" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Export</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function exportStudentProgress() {
+  var input = document.getElementById('studentId');
+  var id = parseInt(input.value, 10);
+  if (!id || id < 1) return;
+  window.location.href = '/exams/student/' + id + '/progress/export';
+}
+</script>

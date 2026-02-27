@@ -33,16 +33,65 @@
             <p class="text-gray-500 text-center py-8">No notifications</p>
         <% } %>
     </div>
+
+    <% if (user && ['admin', 'staff'].includes(user.userType || user.user_type)) { %>
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Delivery Log</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-3 py-2 text-left">Time</th>
+                        <th class="px-3 py-2 text-left">Notification</th>
+                        <th class="px-3 py-2 text-left">User</th>
+                        <th class="px-3 py-2 text-left">Channel</th>
+                        <th class="px-3 py-2 text-left">Status</th>
+                        <th class="px-3 py-2 text-left">Retry</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    <% if (!deliveryLogs || deliveryLogs.length === 0) { %>
+                        <tr><td colspan="6" class="px-3 py-4 text-gray-500 text-center">No delivery logs yet</td></tr>
+                    <% } else { %>
+                        <% deliveryLogs.forEach((d) => { %>
+                            <tr>
+                                <td class="px-3 py-2"><%= d.created_at %></td>
+                                <td class="px-3 py-2"><%= d.title %></td>
+                                <td class="px-3 py-2"><%= d.username %></td>
+                                <td class="px-3 py-2"><%= d.channel %></td>
+                                <td class="px-3 py-2"><%= d.delivery_status %></td>
+                                <td class="px-3 py-2">
+                                    <% if (d.delivery_status !== 'delivered') { %>
+                                        <button onclick="retryDelivery('<%= d.delivery_id %>')" class="text-blue-600 hover:underline">Retry</button>
+                                    <% } else { %>
+                                        <span class="text-gray-400">-</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% } %>
 </div>
 
 <script>
+const csrfToken = window.CSRF_TOKEN || '';
+
 function markRead(id) {
-    fetch('/notifications/' + id + '/read', { method: 'POST' })
+    fetch('/notifications/' + id + '/read', { method: 'POST', headers: { 'x-csrf-token': csrfToken } })
         .then(() => location.reload());
 }
 
 function markAllRead() {
-    fetch('/notifications/mark-all-read', { method: 'POST' })
+    fetch('/notifications/mark-all-read', { method: 'POST', headers: { 'x-csrf-token': csrfToken } })
+        .then(() => location.reload());
+}
+
+function retryDelivery(deliveryId) {
+    fetch('/notifications/deliveries/' + deliveryId + '/retry', { method: 'POST', headers: { 'x-csrf-token': csrfToken } })
         .then(() => location.reload());
 }
 </script>

@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const DB_PATH = process.env.DB_PATH || './student_management.db';
 
@@ -419,6 +419,49 @@ function initializeDatabase() {
       FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE SET NULL
     )`);
 
+    // App Settings
+    database.run(`CREATE TABLE IF NOT EXISTS app_settings (
+      setting_key TEXT PRIMARY KEY,
+      setting_value TEXT NOT NULL,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Role-based Permission Overrides
+    database.run(`CREATE TABLE IF NOT EXISTS role_permissions (
+      role TEXT NOT NULL,
+      permission_key TEXT NOT NULL,
+      allowed INTEGER DEFAULT 0,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (role, permission_key)
+    )`);
+
+    // Login Attempt Tracking (for lockout and monitoring)
+    database.run(`CREATE TABLE IF NOT EXISTS login_attempts (
+      attempt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL,
+      ip_address TEXT,
+      was_success INTEGER DEFAULT 0,
+      reason TEXT,
+      attempted_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Delivery logs per notification/channel/user
+    database.run(`CREATE TABLE IF NOT EXISTS notification_deliveries (
+      delivery_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      notification_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      channel TEXT CHECK(channel IN ('in_app', 'email', 'sms')) NOT NULL,
+      delivery_status TEXT CHECK(delivery_status IN ('queued', 'delivered', 'failed')) DEFAULT 'queued',
+      error_message TEXT,
+      retry_count INTEGER DEFAULT 0,
+      last_attempt_at DATETIME,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (notification_id) REFERENCES notifications(notification_id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    )`);
+    database.run(`CREATE INDEX IF NOT EXISTS idx_login_attempts_username_time ON login_attempts(username, attempted_at DESC)`);
+    database.run(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries(delivery_status, created_at DESC)`);
+
     // Guidance Records (student counseling/advising notes)
     database.run(`CREATE TABLE IF NOT EXISTS guidance_records (
       guidance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -584,6 +627,18 @@ function initializeDatabase() {
       console.log('Admin seed skipped (SEED_ADMIN_PASSWORD not set)');
     }
 
+    // Default security settings
+    database.run(
+      `INSERT OR IGNORE INTO app_settings (setting_key, setting_value)
+       VALUES
+       ('security.password_min_length', '8'),
+       ('security.password_require_number', '1'),
+       ('security.password_require_special', '0'),
+       ('security.max_failed_login_attempts', '5'),
+       ('security.lockout_window_minutes', '15'),
+       ('security.lockout_duration_minutes', '15')`
+    );
+
     console.log('Database tables initialized');
   });
 }
@@ -623,3 +678,4 @@ module.exports = {
   getQuery,
   allQuery
 };
+

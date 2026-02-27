@@ -1,0 +1,37 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Role Permissions</h2>
+    <a href="/dashboard" class="text-blue-600 hover:underline">Back</a>
+  </div>
+
+  <form method="POST" action="/admin/permissions" class="bg-white rounded-xl shadow overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-4 py-3 text-left">Permission</th>
+          <% roles.forEach((role) => { %>
+            <th class="px-4 py-3 text-left capitalize"><%= role %></th>
+          <% }) %>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        <% permissions.forEach((permission) => { %>
+          <tr>
+            <td class="px-4 py-3 font-medium"><%= permission %></td>
+            <% roles.forEach((role) => { %>
+              <td class="px-4 py-3">
+                <label class="inline-flex items-center gap-2">
+                  <input type="checkbox" name="<%= permission %>__<%= role %>" value="1" <%= matrix[permission] && matrix[permission][role] ? 'checked' : '' %>>
+                  <span>Allow</span>
+                </label>
+              </td>
+            <% }) %>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <div class="p-4 border-t border-gray-200 flex justify-end">
+      <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Save Permissions</button>
+    </div>
+  </form>
+</div>

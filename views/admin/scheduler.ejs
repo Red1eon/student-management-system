@@ -1,0 +1,27 @@
+<div class="space-y-6 animate-fade-in">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-bold text-gray-800">Scheduler Dashboard</h2>
+    <form method="POST" action="/admin/scheduler/run-now">
+      <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Run Attendance Risk Job Now</button>
+    </form>
+  </div>
+
+  <div class="bg-white rounded-xl shadow p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+    <div>
+      <p class="text-gray-500">Running</p>
+      <p class="font-semibold text-gray-800"><%= status.is_running ? 'Yes' : 'No' %></p>
+    </div>
+    <div>
+      <p class="text-gray-500">Last Run</p>
+      <p class="font-semibold text-gray-800"><%= status.last_run_at || 'Never' %></p>
+    </div>
+    <div>
+      <p class="text-gray-500">Next Run</p>
+      <p class="font-semibold text-gray-800"><%= status.next_run_at || 'Not scheduled' %></p>
+    </div>
+    <div>
+      <p class="text-gray-500">Last Error</p>
+      <p class="font-semibold text-gray-800"><%= status.last_error || 'None' %></p>
+    </div>
+  </div>
+</div>
